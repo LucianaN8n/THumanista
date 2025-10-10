@@ -5,14 +5,6 @@
   const today = fmt.format(new Date());
   (document.getElementById("today")||{}).textContent = today;
 
-  function postHeight(){
-    const h = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
-    try{ parent.postMessage({type:'thse-resize', height:h}, '*'); }catch(e){}
-  }
-  new ResizeObserver(()=> postHeight()).observe(document.body);
-  window.addEventListener('load', postHeight);
-  window.addEventListener('resize', postHeight);
-
   const TECHS = { CFT:"Terapia Focada na Compaixão (CFT)", DBT:"Terapia Comportamental Dialética (DBT)", GESTALT:"Terapia Gestalt", EXPOSICAO:"Terapia de exposição gradual" };
 
   function getSelections(){
@@ -35,97 +27,147 @@
   }
   const top3 = sc => Object.entries(sc).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k])=>k);
 
-  function deepScript(key){
+  // Roteiros cronometrados por técnica e duração
+  function scriptByDuration(key, dur){
+    const short = dur==="30";
+    const t = (full, shrunk) => short ? shrunk : full;
     if(key==="GESTALT"){
       return [
         "Objetivo: awareness no aqui e agora; contato e responsabilidade.",
-        "Sessão 1 - 50 min",
-        "- 05 min: contrato breve e setting. Pergunte: 'o que te trouxe hoje em uma frase?'.",
-        "- 08 min: psicoeducação do ciclo de contato. Exemplo cotidiano do paciente.",
-        "- 12 min: experimento cadeira vazia (crítico x vulnerável). Condução: 'diga ao crítico: o que você precisa de mim?'.",
-        "- 05 min: aterramento 4-4-6 e varredura corporal.",
-        "- 10 min: integrar aprendizagens; transformar fala de dever em escolha ('eu escolho ...').",
-        "- 05 min: combinar tarefa e indicadores.",
+        t("Sessão 1 - 50 min","Sessão 1 - 30 min"),
+        t("- 05 min: contrato e foco.","- 03 min: contrato e foco."),
+        t("- 08 min: psicoeducação do ciclo de contato.","- 05 min: psicoeducação breve do ciclo."),
+        t("- 12 min: cadeira vazia (crítico x vulnerável); condução guiada.","- 08 min: cadeira vazia breve (1 ciclo)."),
+        t("- 05 min: aterramento 4-4-6.","- 03 min: aterramento 4-4-6."),
+        t("- 10 min: integrar aprendizagens; 'eu escolho...'","- 07 min: integrar e compromisso."),
+        "- 02–03 min: tarefa e indicadores.",
         "Tarefa: diário de awareness 3x/dia (corpo - necessidade - micro-ação).",
-        "Indicadores: mais linguagem de responsabilidade; menor reatividade corporal.",
-        "Cuidados: se emocionar demais, pause e volte ao corpo; não forçar confronto.",
         "",
-        "Sessão 2 - 50 min",
-        "- 05 min: checagem de tarefa e avaliação de risco.",
-        "- 10 min: polaridades (controlar x ceder) com duas cadeiras.",
-        "- 10 min: treino de eu-mensagens (observação, sentimento, necessidade, pedido).",
-        "- 10 min: ensaio situacional com fala direta; feedback somático.",
-        "- 10 min: plano de prática no ambiente real.",
-        "- 05 min: revisão.",
-        "Tarefa: presença em 3 situações-alvo e 1 pedido claro por dia.",
-        "Indicadores: aumento de pedidos claros e contato com sensação.",
+        t("Sessão 2 - 50 min","Sessão 2 - 30 min"),
+        t("- 10 min: polaridades (controlar x ceder).","- 06 min: polaridades rápida."),
+        t("- 10 min: eu-mensagens.","- 06 min: eu-mensagens prática."),
+        t("- 10 min: ensaio situacional + feedback somático.","- 08 min: ensaio situacional."),
+        t("- 10 min: plano de prática real.","- 07 min: plano real."),
+        "- 02–03 min: revisão.",
         "",
-        "Sessão 3 - 50 min",
-        "- 05 min: checagem e obstáculos.",
-        "- 15 min: ajustes criativos - mapear onde funcionaram e onde viraram rigidez.",
-        "- 10 min: experimento 'como seria se... agora' com micro-ação.",
-        "- 10 min: contrato de continuidade (ritual de presença 3x/dia).",
-        "- 10 min: planejar cena desafiadora com suporte corporal."
-      ].join("\\n");
+        t("Sessão 3 - 50 min","Sessão 3 - 30 min"),
+        t("- 15 min: ajustes criativos.","- 08 min: ajustes criativos."),
+        t("- 10 min: experimento 'como seria se... agora'.","- 07 min: experimento imediato."),
+        t("- 10 min: contrato de continuidade.","- 07 min: continuidade + ritual 2x/dia.")
+      ].join("\n");
     }
     if(key==="DBT"){
       return [
-        "Objetivo: regular emoção, aumentar tolerância à aflição e efetividade interpessoal.",
-        "Sessão 1 - 50 min",
-        "- 05 min: alinhamento e metas. Mini mindfulness 3 min (respiração e 5 sentidos).",
-        "- 10 min: função das emoções e vulnerabilidades (sono, alimentação, estresse).",
-        "- 15 min: Tolerância à aflição - TIP (temperatura, intensificar exercício leve, respiração) e ACCEPTS (atividades, contribuir, comparações, emoções opostas, afastar, pensamentos, sensações). Escolher 2.",
-        "- 10 min: ensaio de uso em gatilhos reais (roteirizar).",
-        "- 10 min: plano diário de habilidades.",
-        "Tarefa: cartela de habilidades - praticar 2 por dia (uma TIP e uma ACCEPTS).",
-        "Indicadores: queda de picos; menor urgência comportamental.",
+        "Objetivo: regular emoção, tolerância à aflição e efetividade interpessoal.",
+        t("Sessão 1 - 50 min","Sessão 1 - 30 min"),
+        t("- 10 min: função das emoções + vulnerabilidades.","- 06 min: função das emoções."),
+        t("- 15 min: TIP + ACCEPTS (escolher 2).","- 10 min: TIP + 1 ACCEPTS."),
+        t("- 10 min: roteirizar gatilhos reais.","- 07 min: ensaio em 1 gatilho."),
+        t("- 10 min: plano diário de habilidades.","- 05 min: plano mínimo diário."),
+        "- 02–03 min: síntese.",
         "",
-        "Sessão 2 - 50 min",
-        "- 05 min: revisão da prática e barreiras.",
-        "- 15 min: regulação emocional - opostos à emoção + atividades com valor.",
-        "- 20 min: DEAR MAN (descrever, expressar, afirmar, reforçar, mindful, aparecer confiante, negociar) - role-play de um pedido difícil.",
-        "- 10 min: plano de generalização (quando, onde, com quem).",
-        "Tarefa: 1 DEAR MAN real na semana + registro breve.",
-        "Indicadores: mais assertividade; menos discussões em espiral.",
+        t("Sessão 2 - 50 min","Sessão 2 - 30 min"),
+        t("- 15 min: opostos à emoção + atividades com valor.","- 08 min: opostos à emoção."),
+        t("- 20 min: DEAR MAN com role-play difícil.","- 12 min: DEAR MAN em 1 cena."),
+        t("- 10 min: generalização.","- 07 min: generalização mínima."),
         "",
-        "Sessão 3 - 50 min",
-        "- 05 min: checagem de risco e rede de apoio.",
-        "- 15 min: Plano de Crise (passos 1 foco, 2 habilidades, 3 contatos).",
-        "- 15 min: tolerância à aflição avançada - kit de emergência (gel, música, respiração, frases de validação).",
-        "- 10 min: revisar vitórias e ajustar metas.",
-        "- 05 min: encerramento com mindfulness de gratidão 2 min."
-      ].join("\\n");
+        t("Sessão 3 - 50 min","Sessão 3 - 30 min"),
+        t("- 15 min: Plano de Crise (foco, habilidades, contatos).","- 10 min: Plano de Crise enxuto."),
+        t("- 15 min: kit de emergência.","- 10 min: kit essencial."),
+        t("- 10 min: revisão e metas.","- 07 min: revisão e metas.")
+      ].join("\n");
     }
     if(key==="CFT"){
       return [
-        "Objetivo: reduzir autocrítica e vergonha; cultivar sistema de cuidado/afiliação.",
-        "Sessão 1 - 50 min",
-        "- 05 min: vínculo e motivação. Explicar 3 sistemas (ameaça, impulso, cuidado).",
-        "- 10 min: respiração calmante 4-4-6; corpo base.",
-        "- 15 min: descobrir tom compassivo (voz, postura, olhar, gesto). Ensaiar frases: 'estou aqui com você; é difícil e vamos passo a passo'.",
-        "- 10 min: mapear crítica predominante e seu objetivo protetivo.",
-        "- 10 min: tarefa e ritual de 2x/dia (respiração + frase).",
-        "Tarefa: diário de compaixão 5 min/dia (o que eu diria a um amigo?).",
-        "Indicadores: queda de vergonha; mais autoapoio.",
+        "Objetivo: reduzir autocrítica/vergonha; cultivar sistema de cuidado.",
+        t("Sessão 1 - 50 min","Sessão 1 - 30 min"),
+        t("- 10 min: 3 sistemas + respiração 4-4-6.","- 08 min: 3 sistemas + 4-4-6."),
+        t("- 15 min: tom compassivo (voz, postura, gesto).","- 10 min: tom compassivo essencial."),
+        t("- 10 min: mapear crítica protetiva.","- 07 min: mapear 1 crítica."),
+        "- 02–03 min: tarefa 2x/dia (respiração + frase).",
         "",
-        "Sessão 2 - 50 min",
-        "- 05 min: checagem do ritual e barreiras.",
-        "- 15 min: construir self compassivo (traços, postura, temperatura, linguagem).",
-        "- 15 min: diálogo crítico x self compassivo (roteiro guiado).",
-        "- 10 min: prática de reparentalização breve (mão no peito + frase nutritiva).",
-        "- 05 min: plano de prática situacional.",
-        "Tarefa: 3 momentos de autoapoio/dia + resposta compassiva escrita para 1 autocrítica.",
-        "Indicadores: maior tolerância a erros; aumento de ações com valor.",
+        t("Sessão 2 - 50 min","Sessão 2 - 30 min"),
+        t("- 15 min: construir self compassivo.","- 10 min: self compassivo rápido."),
+        t("- 15 min: diálogo crítico x self compassivo.","- 10 min: diálogo 1 ciclo."),
+        t("- 10 min: reparentalização breve.","- 07 min: reparentalização breve."),
         "",
-        "Sessão 3 - 50 min",
-        "- 05 min: revisão de ganhos.",
-        "- 15 min: compaixão ao eu do passado (carta curta).",
-        "- 15 min: compaixão ao outro difícil mantendo limites.",
-        "- 10 min: ensaio de fala compassiva em situação real.",
-        "- 05 min: consolidar ritual de manutenção 4 semanas."
-      ].join("\\n");
+        t("Sessão 3 - 50 min","Sessão 3 - 30 min"),
+        t("- 15 min: compaixão ao eu do passado.","- 10 min: carta curta ao eu do passado."),
+        t("- 15 min: compaixão ao outro difícil (com limites).","- 10 min: fala compassiva com limites."),
+        t("- 10 min: manutenção 4 semanas.","- 07 min: manutenção 2–4 semanas.")
+      ].join("\n");
+    }
+    if(key==="EXPOSICAO"){
+      return [
+        "Objetivo: reduzir evitação e medo condicionado com exposição gradual.",
+        t("Sessão 1 - 50 min (planejamento)","Sessão 1 - 30 min (planejamento)"),
+        t("- 08 min: psicoeducação (habituação x sensibilização).","- 05 min: psicoeducação rápida."),
+        t("- 12 min: hierarquia 0–100 (10–12 itens).","- 08 min: hierarquia 0–100 (6–8 itens)."),
+        t("- 12 min: treino interoceptivo + SUDS.","- 07 min: interoceptivo + SUDS."),
+        t("- 08 min: escolher 2 alvos iniciais.","- 05 min: escolher 1–2 alvos."),
+        "- 02–03 min: regras de segurança.",
+        "",
+        t("Sessão 2 - 50 min (1ª execução)","Sessão 2 - 30 min (1ª execução)"),
+        t("- 30 min: conduzir exposição situacional (alvo 1).","- 18 min: conduzir exposição curta."),
+        t("- 10 min: processar aprendizado.","- 07 min: processar aprendizado."),
+        t("- 05 min: plano diário.","- 05 min: plano diário."),
+        "",
+        t("Sessão 3 - 50 min (progressão)","Sessão 3 - 30 min (progressão)"),
+        t("- 30 min: avançar 1–2 níveis.","- 18 min: avançar 1 nível."),
+        t("- 10 min: significado e autoeficácia.","- 07 min: significado."),
+        t("- 05 min: manutenção 4 semanas.","- 05 min: manutenção 2–4 semanas.")
+      ].join("\n");
     }
     return "";
+  }
+
+  // Checklists por técnica
+  const CHECKS = {
+    GESTALT: {
+      abre: ["Alinhar foco no aqui-e-agora", "Mapa rápido do ciclo de contato", "Acordos de segurança/pausa"],
+      miolo: ["Experimento (cadeira vazia/polaridades)", "Eu-mensagens / ensaio situacional", "Feedback somático (corpo)"],
+      fecha: ["Síntese do que funcionou", "Tarefa definida e mensurável", "Indicadores para próxima sessão"]
+    },
+    DBT: {
+      abre: ["Definir metas e validar emoção", "Mindfulness curto (3′)", "Revisar vulnerabilidades"],
+      miolo: ["Ensinar TIP/ACCEPTS", "Treinar DEAR MAN", "Plano de crise rascunhado"],
+      fecha: ["Compromisso com 2 habilidades/dia", "Registro rápido (cartela)", "Generalização (quando/onde)"]
+    },
+    CFT: {
+      abre: ["Apresentar 3 sistemas", "Respiração calmante 4-4-6", "Tom compassivo definido"],
+      miolo: ["Diálogo crítico × self compassivo", "Reparentalização breve", "Prática situacional compassiva"],
+      fecha: ["Ritual 2×/dia definido", "Carta/Frase nutritiva combinada", "Indicadores: menos vergonha/mais ação"]
+    },
+    EXPOSICAO: {
+      abre: ["Revisar SUDS e segurança", "Escolha do alvo do dia", "Combinar não reassegurar"],
+      miolo: ["Exposição contínua dentro da janela", "Medir SUDS a cada 3–5 min", "Impedir rituais"],
+      fecha: ["Processar evidências vs. previsão", "Plano de repetição diária", "Próximo nível da hierarquia"]
+    }
+  };
+
+  // Render de um bloco com seletor + script + checklist
+  function renderBlock(key, duration){
+    const name = TECHS[key];
+    const options = `<select class="dur" data-tech="${key}"><option value="30"${duration==="30"?" selected":""}>30 min</option><option value="50"${duration==="50"?" selected":""}>50 min</option></select>`;
+    const checks = CHECKS[key];
+    const mkChecks = (section, items)=>{
+      return `<fieldset><legend>${section}</legend>${
+        items.map((txt,i)=>`<label><input type="checkbox" class="chk" data-tech="${key}" data-sec="${section}" value="${i}"> ${txt}</label>`).join("")
+      }</fieldset>`;
+    };
+    return `
+    <div class="block" id="blk-${key}">
+      <div class="controls">
+        <span class="sel">Duração: ${options}</span>
+      </div>
+      <h5>${name}</h5>
+      <pre>${scriptByDuration(key, duration)}</pre>
+      <div class="checks">
+        ${mkChecks("Abertura", checks.abre)}
+        ${mkChecks("Miolo", checks.miolo)}
+        ${mkChecks("Fechamento", checks.fecha)}
+      </div>
+    </div>`;
   }
 
   function buildParecer(){
@@ -138,14 +180,19 @@
     const obs = ($("#obs").value||"").trim();
 
     const sel = getSelections();
-    let t3 = top3(scoreTechs(sel));
-    if(t3.length<3) t3 = ["GESTALT","DBT","CFT"];
+    let ranking = top3(scoreTechs(sel));
+    const pref = ["GESTALT","DBT","CFT","EXPOSICAO"];
+    ranking = ranking.sort((a,b)=> pref.indexOf(a)-pref.indexOf(b));
+    const t3 = ranking.length? ranking : ["GESTALT","DBT","CFT"];
 
+    // estado de duração por técnica (default 50)
+    const durations = Object.fromEntries(t3.map(k=>[k,"50"]));
+
+    // Monta HTML do parecer
     const tag = t => `<span class="tag">${t}</span>`;
     const tagify = arr => arr.length ? arr.map(tag).join(" ") : "—";
 
-    const blocks = t3.map(k => `<div class="block"><h5>${TECHS[k]}</h5><pre>${deepScript(k)}</pre></div>`).join("");
-
+    // header
     $("#parecer").innerHTML = [
       `<h4>Dados do caso</h4>`,
       `<div><strong>Paciente:</strong> ${nome||"—"} • <strong>Idade:</strong> ${idade||"—"} • <strong>Sev.:</strong> ${sev}/10</div>`,
@@ -153,33 +200,84 @@
       `<div><strong>Objetivo:</strong> ${objetivo||"—"}</div>`,
       `<div><strong>Sintomas/temas:</strong> ${tagify($$(".sym:checked").map(c=>c.value))}</div>`,
       `<div><strong>Padrões:</strong> ${tagify($$(".pat:checked").map(c=>c.value))}</div>`,
-      `<div><strong>Preferências:</strong> ${tagify($$(".pref:checked").map(c=>c.value))}</div>`,
-      `<div><strong>Riscos/atenção:</strong> ${riscos||"—"}</div>`,
-      `<div><strong>Observações do terapeuta:</strong> ${obs||"—"}</div>`,
       `<div class="sep"></div>`,
       `<h4>Técnicas selecionadas (máx. 3)</h4>`,
       `<div>${t3.map(k=>tag(TECHS[k])).join(" ")}</div>`,
       `<div class="sep"></div>`,
-      `<h4>Roteiro detalhado (primeiros 3 encontros, 50 min)</h4>`,
-      blocks
+      `<h4>Roteiro detalhado (Sessões 1–3)</h4>`,
+      t3.map(k=>renderBlock(k, durations[k])).join("")
     ].join("");
 
-    const headerLines = [
+    // listeners das dropdowns para trocar duração on-the-fly
+    $$(".dur").forEach(sel=>{
+      sel.addEventListener("change", (e)=>{
+        const key = e.target.dataset.tech;
+        const dur = e.target.value;
+        const pre = document.querySelector(`#blk-${key} pre`);
+        pre.textContent = scriptByDuration(key, dur);
+      });
+    });
+
+    // Retorno para o PDF
+    function readChecklist(){
+      const out = {};
+      t3.forEach(k=>{
+        out[k] = {Abertura:[], Miolo:[], Fechamento:[]};
+      });
+      $$(".chk").forEach(c=>{
+        const k = c.dataset.tech, sec = c.dataset.sec;
+        if (c.checked){
+          const label = c.parentElement.textContent.trim();
+          out[k][sec].push(label);
+        }
+      });
+      return out;
+    }
+    function readDurations(){
+      const out = {};
+      $$(".dur").forEach(s=> out[s.dataset.tech] = s.value);
+      return out;
+    }
+
+    return {
+      t3, nome, idade, queixa, objetivo, sev,
+      durationsReader: readDurations,
+      checklistReader: readChecklist
+    };
+  }
+
+  function gerarTextoPDF(ctx){
+    const {t3, nome, idade, queixa, objetivo, sev} = ctx;
+    const durs = ctx.durationsReader();
+    const checks = ctx.checklistReader();
+    const header = [
       `Paciente: ${nome||"—"}`,
       `Idade: ${idade||"—"}`,
       `Data: ${today}`,
       `Severidade: ${sev}/10`,
       `Queixa: ${queixa||"—"}`,
-      `Objetivo: ${objetivo||"—"}`
-    ];
-    const corpo = t3.map(k => `${TECHS[k]}\n${deepScript(k)}`).join("\n\n");
-    return {texto: headerLines.join("\n") + "\n\n" + corpo};
+      `Objetivo: ${objetivo||"—"}`,
+      ""
+    ].join("\n");
+    const body = t3.map(k=>{
+      const titulo = `${TECHS[k]} — ${durs[k]} min`;
+      const script = scriptByDuration(k, durs[k]);
+      const ck = checks[k]||{Abertura:[], Miolo:[], Fechamento:[]};
+      const ckTxt = ["Abertura","Miolo","Fechamento"].map(sec=>{
+        const arr = ck[sec]||[];
+        if(!arr.length) return `${sec}: [ ]`;
+        return `${sec}: ` + arr.map(t=>`[x] ${t}`).join("; ");
+      }).join("\n");
+      return `${titulo}\n${script}\n\nChecklist\n${ckTxt}`;
+    }).join("\n\n");
+    return header + body;
   }
 
   function baixarPDF(){
     const { jsPDF } = window.jspdf || {};
     if (!jsPDF){ alert("PDF off-line: coloque /vendor/jspdf.umd.min.js (ou permita a CDN)."); return; }
-    const {texto} = buildParecer();
+    const ctx = buildParecer(); // garante leitura atualizada de durations/checks
+    const texto = gerarTextoPDF(ctx);
     const doc = new jsPDF({unit:"pt", format:"a4"});
     const margin = 48, maxWidth = 515;
     doc.setFont("Helvetica","Bold"); doc.setFontSize(14);
@@ -198,15 +296,16 @@
     doc.save("Protocolo_THSE.pdf");
   }
 
+  // Eventos
   document.getElementById("gerar").addEventListener("click", ()=>{
-    buildParecer();
+    const ctx = buildParecer();
     const fab = document.getElementById("fab-pdf");
     if (fab) fab.style.display = "flex";
-    postHeight();
+    document.getElementById("card-parecer").scrollIntoView({behavior:"smooth", block:"start"});
   });
-  document.getElementById("pdf").addEventListener("click", baixarPDF);
-  document.getElementById("pdfTop").addEventListener("click", baixarPDF);
-  document.getElementById("pdf2").addEventListener("click", baixarPDF);
+  ["pdf","pdfTop","pdf2"].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.addEventListener("click", baixarPDF);
+  });
   document.getElementById("limpar").addEventListener("click", ()=>{
     ["nome","idade","queixa","objetivo","riscos","obs"].forEach(id=> {const el=document.getElementById(id); if(el) el.value="";});
     $$("input[type=checkbox]").forEach(c=> c.checked=false);
@@ -214,7 +313,6 @@
     const fab = document.getElementById("fab-pdf"); if (fab) fab.style.display="none";
     const p = document.getElementById("parecer");
     if(p) p.innerHTML = '<p>Preencha a anamnese e clique em <strong>Gerar protocolo</strong>.</p>';
-    postHeight();
     window.scrollTo({top:0, behavior:"smooth"});
   });
 })();

@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>THSE – Mentor Humanista (Gestalt • DBT • CFT)</title>
-  <meta name="description" content="Anamnese + seleção de técnicas (máx. 3) com roteiro detalhado, cronometrado e PDF.">
+  <meta name="description" content="Anamnese + seleção de técnicas (máx. 3) com roteiro detalhado, duração por técnica, checklists e PDF.">
   <link rel="stylesheet" href="styles.css" />
   <script src="vendor/jspdf.umd.min.js" defer></script>
 </head>
@@ -12,7 +12,7 @@
   <header class="container pagebar">
     <h1>🌿 THSE – Mentor Humanista</h1>
     <div class="pagebar-actions">
-      <button id="pdfTop" class="btn outline sm">⬇️ Baixar PDF</button>
+      <button id="pdfTop" class="btn outline sm">⬇️ PDF</button>
     </div>
   </header>
 
@@ -20,21 +20,21 @@
     <section class="card compact" id="card-dados">
       <h2>1) Dados do paciente</h2>
       <div class="row tight">
-        <label>Nome do paciente
+        <label>Nome
           <input type="text" id="nome" placeholder="Ex.: Maria A." />
         </label>
         <label>Idade
-          <input type="number" id="idade" min="0" max="120" placeholder="Ex.: 34" />
+          <input type="number" id="idade" min="0" max="120" placeholder="34" />
         </label>
       </div>
       <div class="row tight">
-        <label>Queixa principal
+        <label>Queixa
           <textarea id="queixa" rows="2" placeholder="Ex.: isolamento social, medo de rejeição…"></textarea>
         </label>
       </div>
       <div class="row tight last">
-        <label>Objetivo terapêutico (do paciente)
-          <textarea id="objetivo" rows="2" placeholder="Ex.: comunicar-se melhor, ampliar vínculos, reduzir crises…"></textarea>
+        <label>Objetivo do paciente
+          <textarea id="objetivo" rows="2" placeholder="Ex.: comunicar-se melhor, ampliar vínculos…"></textarea>
         </label>
       </div>
     </section>
@@ -42,59 +42,55 @@
     <section class="card compact" id="card-anamnese">
       <h2>2) Anamnese breve</h2>
       <div class="qgroup">
-        <h3>Sintomas / temas (marque os que se aplicam):</h3>
+        <h3>Sintomas / temas</h3>
         <div class="pillbox">
-          <label><input type="checkbox" value="ansiedade" class="sym"> Ansiedade / pânico</label>
-          <label><input type="checkbox" value="depressao" class="sym"> Depressão / apatia</label>
-          <label><input type="checkbox" value="trauma" class="sym"> Trauma / TEPT</label>
+          <label><input type="checkbox" value="ansiedade" class="sym"> Ansiedade/pânico</label>
+          <label><input type="checkbox" value="depressao" class="sym"> Depressão/apatia</label>
+          <label><input type="checkbox" value="trauma" class="sym"> Trauma/TEPT</label>
           <label><input type="checkbox" value="luto" class="sym"> Lutos e perdas</label>
-          <label><input type="checkbox" value="casal" class="sym"> Casal / conflitos relacionais</label>
-          <label><input type="checkbox" value="parentalidade" class="sym"> Educação parental</label>
-          <label><input type="checkbox" value="toxico" class="sym"> Relacionamentos tóxicos</label>
-          <label><input type="checkbox" value="substancias" class="sym"> Uso de substâncias</label>
-          <label><input type="checkbox" value="burnout" class="sym"> Burnout / estresse crônico</label>
-          <label><input type="checkbox" value="posparto" class="sym"> Depressão pós-parto</label>
-          <label><input type="checkbox" value="memoria" class="sym"> Queixas de memória</label>
-          <label><input type="checkbox" value="desenvolvimento" class="sym"> Transtornos do desenvolvimento</label>
-          <label><input type="checkbox" value="psicossomatico" class="sym"> Doenças físicas / psicossomática</label>
+          <label><input type="checkbox" value="casal" class="sym"> Casal/conflitos</label>
+          <label><input type="checkbox" value="toxico" class="sym"> Relac. tóxicos</label>
+          <label><input type="checkbox" value="substancias" class="sym"> Substâncias</label>
+          <label><input type="checkbox" value="burnout" class="sym"> Burnout</label>
+          <label><input type="checkbox" value="memoria" class="sym"> Memória</label>
         </div>
       </div>
 
       <div class="qgroup smallgap">
-        <h3>Severidade percebida (0–10)</h3>
+        <h3>Severidade (0–10)</h3>
         <input type="range" id="severidade" min="0" max="10" step="1" value="6" oninput="sevVal.textContent=this.value">
         <div>Valor: <strong id="sevVal">6</strong></div>
       </div>
 
       <div class="qgroup">
-        <h3>Padrões observáveis (últimas 2–4 semanas):</h3>
+        <h3>Padrões (2–4 sem.)</h3>
         <div class="pillbox">
-          <label><input type="checkbox" value="evitacao" class="pat"> Evitação de situações/emoções</label>
-          <label><input type="checkbox" value="autocritica" class="pat"> Autocrítica intensa / vergonha</label>
-          <label><input type="checkbox" value="impulsividade" class="pat"> Impulsividade / explosões</label>
-          <label><input type="checkbox" value="ruminacao" class="pat"> Ruminação / preocupação constante</label>
-          <label><input type="checkbox" value="conflito_relacional" class="pat"> Brigas recorrentes / rompimentos</label>
-          <label><input type="checkbox" value="hipervigilancia" class="pat"> Hipervigilância / sobressaltos</label>
-          <label><input type="checkbox" value="apatia" class="pat"> Afastamento social / apatia</label>
-          <label><input type="checkbox" value="procrastinacao" class="pat"> Procrastinação persistente</label>
+          <label><input type="checkbox" value="evitacao" class="pat"> Evitação</label>
+          <label><input type="checkbox" value="autocritica" class="pat"> Autocrítica/verg.</label>
+          <label><input type="checkbox" value="impulsividade" class="pat"> Impulsividade</label>
+          <label><input type="checkbox" value="ruminacao" class="pat"> Ruminação</label>
+          <label><input type="checkbox" value="conflito_relacional" class="pat"> Conflitos/rupturas</label>
+          <label><input type="checkbox" value="hipervigilancia" class="pat"> Hipervigilância</label>
+          <label><input type="checkbox" value="apatia" class="pat"> Afastamento</label>
+          <label><input type="checkbox" value="procrastinacao" class="pat"> Procrastinação</label>
         </div>
       </div>
 
       <div class="row tight">
         <label>Riscos/atenção
-          <textarea id="riscos" rows="2" placeholder="Ex.: ideação suicida, violência doméstica, uso abusivo, etc."></textarea>
+          <textarea id="riscos" rows="2" placeholder="Ex.: ideação suicida, violência, uso abusivo…"></textarea>
         </label>
       </div>
 
       <div class="row tight last">
         <label>Observações do terapeuta
-          <textarea id="obs" rows="2" placeholder="Hipóteses iniciais, fatores contextuais, preferências de setting…"></textarea>
+          <textarea id="obs" rows="2" placeholder="Hipóteses iniciais, contexto, preferências de setting…"></textarea>
         </label>
       </div>
 
       <div class="actions topgap">
         <button id="gerar" class="btn">🧭 Gerar protocolo</button>
-        <button id="pdf" class="btn outline">⬇️ Baixar PDF</button>
+        <button id="pdf" class="btn outline">⬇️ PDF</button>
         <button id="limpar" class="btn ghost">🧹 Limpar</button>
       </div>
     </section>
@@ -103,11 +99,11 @@
       <div class="parecer-toolbar">
         <strong>Protocolo</strong>
         <span class="spacer"></span>
-        <button id="pdf2" class="btn outline sm">⬇️ Baixar PDF</button>
+        <button id="pdf2" class="btn outline sm">⬇️ PDF</button>
       </div>
       <h2>3) Parecer do Especialista</h2>
       <div id="parecer" class="parecer">
-        <p>Preencha a anamnese e clique em <strong>Gerar protocolo</strong>. O sistema selecionará até <strong>3 técnicas</strong> e entregará um <strong>roteiro passo a passo</strong> (Sessão 1–3), com scripts, tarefas, indicadores e cuidados.</p>
+        <p>Preencha a anamnese e clique em <strong>Gerar protocolo</strong>. Você receberá um roteiro <strong>passo a passo</strong> (Sessões 1–3) com duração por técnica, checklists marcáveis, tarefas e indicadores.</p>
       </div>
     </section>
 

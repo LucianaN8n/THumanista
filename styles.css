@@ -1,18 +1,24 @@
-/* CSS compacto (mesmo da v10) */ 
+/* v10.3 — mobile compacto + controles por técnica + checklist */
 :root{--bg:#f6faf9;--fg:#0e2b2f;--muted:#4a6b70;--card:#fff;--line:#e6ecec;--shadow:0 4px 18px rgba(12,45,49,.06);--accent:#0aaea1;--accent2:#007a70;--ink:#0b1f22;--chipbg:#e9fbf7;--chipbd:#c1efe7;--chipfg:#06695f}
-*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--fg);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-.container{max-width:1100px;margin:0 auto;padding:14px}.center{text-align:center}.muted{color:var(--muted);font-size:14px}
-.pagebar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:10px;padding-bottom:6px}.pagebar-actions{display:flex;gap:8px;align-items:center}
-header h1{margin:.1rem 0 0;font-size:22px;font-weight:800}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+.container{max-width:1100px;margin:0 auto;padding:10px}
+@media (max-width:560px){.container{padding:8px}}
+.pagebar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0 4px}
+header h1{margin:0;font-size:20px;font-weight:800}
+@media (max-width:560px){header h1{font-size:18px}}
+.pagebar-actions{display:flex;gap:6px;align-items:center}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 @media (max-width:900px){.grid{grid-template-columns:1fr}}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;box-shadow:var(--shadow)}
 .card.compact{padding:10px}
-h2{margin:.2rem 0 6px;font-size:17px}
-h3{margin:6px 0 6px;font-size:14px}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0}
-.row.tight{gap:6px;margin:4px 0}
+@media (max-width:560px){.card.compact{padding:8px}}
+h2{margin:.1rem 0 6px;font-size:17px}
+h3{margin:4px 0 4px;font-size:14px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:4px 0}
+.row.tight{gap:6px;margin:3px 0}
 .row.last{margin-bottom:2px}
+@media (max-width:560px){.row{grid-template-columns:1fr}}
 .row label{display:flex;flex-direction:column;gap:4px}
 input[type=text],input[type=number],textarea{border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:14px;background:#fcfefe}
 textarea{resize:vertical}
@@ -25,15 +31,23 @@ textarea{resize:vertical}
 .btn.outline{background:transparent;color:var(--accent2);border:2px solid var(--accent2)}
 .btn.ghost{background:transparent;color:var(--muted);border:1px dashed var(--line)}
 .btn.sm{padding:6px 10px;border-radius:10px}
+/* Parecer */
 .parecer{white-space:pre-wrap;line-height:1.5;font-size:14.5px;color:var(--ink)}
 .parecer h4{margin:6px 0 6px;font-size:15px}
 .parecer .tag{display:inline-block;margin:2px 6px 2px 0;padding:2px 8px;border-radius:999px;background:var(--chipbg);color:var(--chipfg);border:1px solid var(--chipbd);font-size:12px}
 .parecer .block{margin:10px 0;padding:10px;border:1px solid var(--line);border-radius:12px;background:#fcfffe}
 .parecer .block h5{margin:0 0 6px 0;font-size:15px}
 .parecer pre{margin:6px 0 0;padding:8px 10px;border-left:3px solid var(--accent);background:#f8fdfa;border-radius:8px;overflow:auto;font-size:13.5px}
+.block .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 6px}
+.controls .sel{display:inline-flex;gap:8px;align-items:center;background:#f7fffe;border:1px solid var(--chipbd);padding:6px 10px;border-radius:999px;font-size:12px}
+.checks{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:6px}
+@media (max-width:900px){.checks{grid-template-columns:1fr}}
+.checks fieldset{border:1px dashed var(--line);border-radius:10px;padding:8px}
+.checks legend{font-size:12px;color:var(--muted)}
+.checks label{display:flex;gap:8px;align-items:flex-start;margin:4px 0;font-size:13.5px}
 .sep{height:1px;background:var(--line);margin:8px 0}
-footer{padding-bottom:22px}
-.parecer-toolbar{position:sticky;top:-6px;z-index:3;background:linear-gradient(#ffffff,#ffffffcc);padding:4px 0 6px;margin:-4px 0 6px;backdrop-filter:blur(2px);display:flex;gap:8px;align-items:center;border-bottom:1px dashed var(--line)}
+footer{padding-bottom:20px}
+.parecer-toolbar{position:sticky;top:-6px;z-index:3;background:linear-gradient(#ffffff,#ffffffcc);padding:4px 0 6px;margin:-2px 0 6px;backdrop-filter:blur(2px);display:flex;gap:8px;align-items:center;border-bottom:1px dashed var(--line)}
 .parecer-toolbar .spacer{flex:1}
 .fab{position:fixed;right:14px;bottom:14px;width:48px;height:48px;border-radius:50%;background:var(--accent);color:#fff;border:0;box-shadow:var(--shadow);font-size:20px;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:50}
 .fab:hover{background:var(--accent2)}
