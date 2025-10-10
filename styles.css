@@ -1,8 +1,9 @@
-/* v6 compacto (sem impressão para evitar URL do app) */
+/* v7 – melhorias visuais e de legibilidade */
 :root{
   --bg:#f6faf9; --fg:#0e2b2f; --muted:#4a6b70;
   --card:#ffffff; --line:#e6ecec; --shadow:0 4px 18px rgba(12,45,49,.06);
-  --accent:#0aaea1; --accent2:#007a70;
+  --accent:#0aaea1; --accent2:#007a70; --ink:#0b1f22;
+  --chipbg:#e9fbf7; --chipbd:#c1efe7; --chipfg:#06695f;
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--fg);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
@@ -29,12 +30,16 @@ textarea{resize:vertical}
 .btn:hover{background:var(--accent2)}
 .btn.outline{background:transparent;color:var(--accent2);border:2px solid var(--accent2)}
 .btn.ghost{background:transparent;color:var(--muted);border:1px dashed var(--line)}
-.parecer{white-space:pre-wrap;line-height:1.45;font-size:15px}
-.parecer h4{margin:8px 0 4px;font-size:16px}
-.parecer .tag{display:inline-block;margin:2px 6px 2px 0;padding:2px 8px;border-radius:999px;background:#e9fbf7;color:#06695f;border:1px solid #c1efe7;font-size:12px}
+.parecer{white-space:pre-wrap;line-height:1.55;font-size:15px;color:var(--ink)}
+.parecer h4{margin:8px 0 6px;font-size:16px}
+.parecer .tag{display:inline-block;margin:2px 6px 2px 0;padding:2px 8px;border-radius:999px;background:var(--chipbg);color:var(--chipfg);border:1px solid var(--chipbd);font-size:12px}
+.parecer .block{margin:14px 0;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:#fcfffe}
+.parecer pre{margin:10px 0 0;padding:10px 12px;border-left:3px solid var(--accent);background:#f8fdfa;border-radius:10px;overflow:auto}
+.sep{height:1px;background:var(--line);margin:12px 0}
 footer{padding-bottom:28px}
 .parecer-toolbar{position:sticky;top:-8px;z-index:2;background:linear-gradient(#ffffff,#ffffffcc);
-  padding:6px 0 8px;margin:-6px 0 8px;backdrop-filter:blur(2px);display:flex;gap:8px;justify-content:flex-end;border-bottom:1px dashed var(--line)}
+  padding:6px 0 8px;margin:-6px 0 8px;backdrop-filter:blur(2px);display:flex;gap:8px;align-items:center;border-bottom:1px dashed var(--line)}
+.parecer-toolbar .spacer{flex:1}
 .btn.sm{padding:6px 10px;border-radius:12px}
 .fab{position:fixed;right:16px;bottom:16px;width:48px;height:48px;border-radius:50%;background:var(--accent);color:#fff;border:0;box-shadow:var(--shadow);font-size:20px;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:50}
 .fab:hover{background:var(--accent2)}

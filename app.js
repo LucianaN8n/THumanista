@@ -1,4 +1,4 @@
-/* v6 – sem PRINT, jsPDF local + fallback, robust gerar() */
+/* v7 – mais detalhamento, correção de \n, espaçamentos melhores */
 (function(){
   const $ = s => document.querySelector(s);
   const $$ = s => Array.from(document.querySelectorAll(s));
@@ -39,28 +39,16 @@
     "GESTALT": { nome:"Terapia Gestalt"},
     "HUMAN_DESIGN": { nome:"Desenho Humano"},
     "EXPOSICAO": { nome:"Terapia de exposição gradual"},
-    "DEP_ANS_FIS": { nome:"Depressão, ansiedade e doenças físicas"},
-    "SAUDE_MENTAL": { nome:"Saúde mental"},
-    "EMOCOES_INCERTEZA": { nome:"Gerenciando Emoções em Tempos de Incerteza e Estresse"},
-    "FAMILIAR_CASAL": { nome:"Terapia familiar e de casal"},
-    "LUTO": { nome:"Terapia em Lutos e perdas"},
-    "PARENTAL": { nome:"Educação parental"},
-    "AMADURECIMENTO": { nome:"Amadurecimento Pessoal"},
-    "FAMILIAR_ESTRATEGICA": { nome:"Terapia familiar estratégica"},
-    "FAMILIAR_ESTRUTURAL": { nome:"Terapia estrutural familiar"},
-    "TRANSGERACIONAL": { nome:"Terapia Transgeracional"},
     "IMAGO": { nome:"Terapia do Imago (casal)"},
     "IBCT": { nome:"Terapia Comportamental Integrativa de Casais (IBCT)"},
-    "AC_ANALITICA": { nome:"Terapia em análise comportamental"},
-    "POSPARTO": { nome:"Depressão pós parto"},
-    "ABA": { nome:"Análise do Comportamento Aplicada (ABA)"},
-    "TOXICOS": { nome:"Relacionamentos tóxicos"},
+    "PARENTAL": { nome:"Educação parental"},
+    "LUTO": { nome:"Terapia em Lutos e perdas"},
     "SUBSTANCIAS": { nome:"Transtorno por uso de substâncias"},
     "BURNOUT": { nome:"Transtorno de Burnout"},
     "MEMORIA": { nome:"Reabilitação de memória"},
     "CENTRADO_PESSOA": { nome:"Método clínico centrado na pessoa"},
-    "DESENV_GLOBAL": { nome:"Transtornos globais de desenvolvimento"},
-    "PSICANALISE_HUM": { nome:"Psicanálise humanista"}
+    "ABA": { nome:"Análise do Comportamento Aplicada (ABA)"},
+    "FAMILIAR_CASAL": { nome:"Terapia familiar e de casal"}
   };
 
   function getSelections(){
@@ -76,204 +64,249 @@
     const has = v => sintomas.includes(v);
     const pat = v => padroes.includes(v);
 
-    if (has("ansiedade")) { score.DBT+=3; score.EXPOSICAO+=3; score.GESTALT+=2; score.CFT+=2; score.SAUDE_MENTAL+=1; }
-    if (has("depressao")) { score.CFT+=3; score.SAUDE_MENTAL+=2; score.DBT+=2; score.DEP_ANS_FIS+=2; score.GESTALT+=1; }
+    if (has("ansiedade")) { score.DBT+=3; score.EXPOSICAO+=3; score.GESTALT+=2; score.CFT+=2; }
+    if (has("depressao")) { score.CFT+=3; score.DBT+=2; score.GESTALT+=1; }
     if (has("trauma")) { score.EXPOSICAO+=3; score.DBT+=2; score.GESTALT+=2; score.CFT+=2; }
     if (has("luto")) { score.LUTO+=4; score.GESTALT+=2; score.CFT+=2; }
     if (has("casal")) { score.IMAGO+=4; score.IBCT+=4; score.GESTALT+=2; score.FAMILIAR_CASAL+=2; }
-    if (has("parentalidade")) { score.PARENTAL+=4; score.FAMILIAR_ESTRATEGICA+=2; score.FAMILIAR_ESTRUTURAL+=2; }
-    if (has("toxico")) { score.TOXICOS+=3; score.GESTALT+=2; score.CFT+=2; score.FAP+=2; }
+    if (has("parentalidade")) { score.PARENTAL+=4; }
+    if (has("toxico")) { score.FAP+=2; score.GESTALT+=2; score.CFT+=2; }
     if (has("substancias")) { score.SUBSTANCIAS+=4; score.FAP+=3; score.DBT+=2; }
-    if (has("burnout")) { score.BURNOUT+=4; score.DBT+=2; score.CFT+=2; score.AMADURECIMENTO+=1; }
-    if (has("posparto")) { score.POSPARTO+=4; score.CFT+=2; score.SAUDE_MENTAL+=2; }
-    if (has("memoria")) { score.MEMORIA+=4; score.SAUDE_MENTAL+=1; }
-    if (has("desenvolvimento")) { score.ABA+=4; score.PARENTAL+=2; score.DESENV_GLOBAL+=2; }
-    if (has("psicossomatico")) { score.DEP_ANS_FIS+=3; score.GESTALT+=2; score.CENTRADO_PESSOA+=2; }
+    if (has("burnout")) { score.BURNOUT+=4; score.DBT+=2; score.CFT+=2; }
+    if (has("posparto")) { score.CFT+=2; }
+    if (has("memoria")) { score.MEMORIA+=4; }
+    if (has("desenvolvimento")) { score.ABA+=4; score.PARENTAL+=2; }
+    if (has("psicossomatico")) { score.GESTALT+=2; score.CENTRADO_PESSOA+=2; }
 
     if (pat("evitacao")) { score.EXPOSICAO+=3; score.DBT+=1; }
     if (pat("autocritica")) { score.CFT+=4; }
     if (pat("impulsividade")) { score.DBT+=3; score.FAP+=2; }
     if (pat("ruminacao")) { score.CFT+=2; score.GESTALT+=2; }
-    if (pat("conflito_relacional")) { score.IMAGO+=3; score.IBCT+=3; score.GESTALT+=1; }
-    if (pat("hipervigilancia")) { score.EXPOSICAO+=2; score.DBT+=1; }
-    if (pat("apatia")) { score.CFT+=2; score.SAUDE_MENTAL+=2; }
-    if (pat("procrastinacao")) { score.CFT+=1; score.CENTRADO_PESSOA+=1; }
+    if (pat("conflito_relacional")) { score.IMAGO+=3; score.IBCT+=3; }
+    if (pat("hipervigilancia")) { score.EXPOSICAO+=2; }
+    if (pat("apatia")) { score.CFT+=2; }
+    if (pat("procrastinacao")) { score.CFT+=1; }
 
-    if (prefs.includes("diretivo")) { score.DBT+=1; score.EXPOSICAO+=1; score.IBCT+=1; score.PARENTAL+=1; }
-    if (prefs.includes("experiencial")) { score.GESTALT+=2; score.IMAGO+=1; }
-    if (prefs.includes("espiritual")) { score.HUMAN_DESIGN+=2; }
-    if (prefs.includes("ritmo_suave")) { score.CFT+=2; score.CENTRADO_PESSOA+=1; }
-
-    if (sintomas.includes("casal")) { score.FAMILIAR_CASAL+=1; }
-    if (sintomas.includes("parentalidade")) { score.FAMILIAR_ESTRATEGICA+=1; score.FAMILIAR_ESTRUTURAL+=1; }
-    if (sintomas.includes("desenvolvimento")) { score.AC_ANALITICA+=1; }
+    if (state.prefs?.includes("diretivo")) { score.DBT+=1; score.EXPOSICAO+=1; score.IBCT+=1; }
+    if (state.prefs?.includes("experiencial")) { score.GESTALT+=2; score.IMAGO+=1; }
+    if (state.prefs?.includes("espiritual")) { score.HUMAN_DESIGN+=2; }
+    if (state.prefs?.includes("ritmo_suave")) { score.CFT+=2; }
 
     return score;
   }
 
+  // Protocolo mais detalhado (scripts, medidas, tarefas)
   function protocolFor(techKey){
-    const base = { objetivo:"", quando:"", sessao1:"", sessao2:"", sessao3:"", tarefa:"", indicadores:"", cuidados:"" };
+    const H = (t)=>`▶ ${TECHS[techKey].nome}`;
+    const S = (label, txt)=>`• ${label}: ${txt}`;
     switch(techKey){
       case "GESTALT":
-        base.objetivo="Aumentar awareness no aqui‑e‑agora, restaurar contato e responsabilidade pelas escolhas.";
-        base.quando="Confusão, ruminação, padrões repetitivos; conflitos relacionais e autorregulação.";
-        base.sessao1="• Setting; escuta ativa. • Ciclo do contato; cadeira vazia (crítico × vulnerável).";
-        base.sessao2="• Polaridades; grounding respiratório; ensaios de eu‑mensagens.";
-        base.sessao3="• Ajustes criativos; gatilhos; prática de presença 7 dias (3×/dia).";
-        base.tarefa="Diário de awareness (3×/dia): corpo, necessidade, micro‑ação.";
-        base.indicadores="Menos fusão com pensamentos; mais responsabilidade; menos conflitos reativos.";
-        base.cuidados="Não forçar experimentos; respeitar janela de tolerância.";
-        break;
+        return [
+          H("GESTALT"),
+          S("Objetivo","Expandir awareness no aqui‑e‑agora, contatar necessidades e restaurar responsabilidade."),
+          "Sessão 1 — Abertura & awareness",
+          "  - Contrato de setting; mapa do ciclo do contato (sensação→awareness→mobilização→ação→contato→retirada).",
+          "  - Experimento: Cadeira vazia (Parte Crítica × Parte Vulnerável).",
+          "  - Prompt do terapeuta: “Ao dizer isso, o que sente no corpo exatamente agora?”",
+          "Sessão 2 — Polaridades & corpo",
+          "  - Explorar polaridades (controlar×ceder; agradar×frustrar).",
+          "  - Grounding: respiração 4‑4‑6 + varredura corporal de 90s.",
+          "  - Treino de ‘eu‑mensagens’ para comunicação autêntica.",
+          "Sessão 3 — Ajustes criativos",
+          "  - Identificar micro‑escolhas no dia (antes de evitar/atacar).",
+          "  - Plano 7 dias de prática de presença (3 checkpoints/dia).",
+          S("Tarefa", "Diário de awareness: corpo/necessidade/micro‑ação (3×/dia)."),
+          S("Indicadores", "Menos fusão com pensamentos; mais linguagem de responsabilidade; conflitos menos reativos."),
+          S("Cuidados", "Não forçar experimentos; respeitar a janela de tolerância.")
+        ].join("\\n");
       case "DBT":
-        base.objetivo="Aumentar tolerância ao desconforto e regulação emocional via habilidades DBT.";
-        base.quando="Impulsividade, oscilações intensas, conflitos recorrentes.";
-        base.sessao1="• Psicoed. emoções + mindfulness 3’; TIP/ACCEPTS.";
-        base.sessao2="• Regulação: vulnerabilidades + opostos à emoção; DEAR MAN.";
-        base.sessao3="• Plano de crise pessoal; ensaios de limites.";
-        base.tarefa="Cartão de habilidades (2 práticas/dia).";
-        base.indicadores="Redução de picos e rupturas; mais assertividade.";
-        base.cuidados="Monitorar risco; rede de apoio.";
-        break;
+        return [
+          H("DBT"),
+          S("Objetivo","Aumentar regulação emocional, tolerância à aflição e efetividade interpessoal."),
+          "Sessão 1 — Fundamentos",
+          "  - Psicoeducação breve de emoções.",
+          "  - Mindfulness 3’ (foco na respiração).",
+          "  - Tolerância à aflição: TIP/ACCEPTS (escolher 2 estratégias).",
+          "Sessão 2 — Regulação & relações",
+          "  - Vulnerabilidades (sono, alimentação, estresse) + ‘opostos à emoção’.",
+          "  - Treino DEAR MAN para pedidos e limites.",
+          "Sessão 3 — Plano de crise",
+          "  - Passos e contatos; ensaios comportamentais.",
+          S("Tarefa","Cartão de habilidades: 2 práticas/dia (mindfulness + ACCEPTS/DEAR MAN)."),
+          S("Indicadores","Menos picos, menos rupturas, mais assertividade."),
+          S("Cuidados","Monitorar risco; reforçar rede de suporte.")
+        ].join("\\n");
       case "CFT":
-        base.objetivo="Reduzir autocrítica e vergonha; cultivar sistema de afiliação/segurança.";
-        base.quando="Autocrítica, vergonha, depressão/ansiedade social.";
-        base.sessao1="• 3 sistemas (ameaça, impulso, cuidado); respiração 4‑4‑6; tom compassivo.";
-        base.sessao2="• Self compassivo; reescrever diálogo crítico.";
-        base.sessao3="• Compaixão ao outro e ao eu do passado; rituais 2×/dia.";
-        base.tarefa="Diário de compaixão 5’/dia.";
-        base.indicadores="Menos autocrítica; mais engajamento.";
-        base.cuidados="Ritmo suave para evitar retraimento.";
-        break;
+        return [
+          H("CFT"),
+          S("Objetivo","Reduzir autocrítica/vergonha; ativar sistema de afiliação e segurança."),
+          "Sessão 1 — 3 sistemas e respiração",
+          "  - Ameaça × Impulso × Cuidado; respiração calmante 4‑4‑6.",
+          "  - Descobrir tom compassivo (voz/postura).",
+          "Sessão 2 — Self compassivo",
+          "  - Construir imagem (traços, gestos, frases); reescrever diálogo crítico.",
+          "Sessão 3 — Expansão da compaixão",
+          "  - Ao outro e ao eu do passado; rituais 2×/dia.",
+          S("Tarefa","Diário de compaixão 5’/dia (o que eu diria a um amigo?)."),
+          S("Indicadores","Queda de autocrítica; mais engajamento em atividades significativas."),
+          S("Cuidados","Ritmo suave; acolher tristeza emergente.")
+        ].join("\\n");
       case "EXPOSICAO":
-        base.objetivo="Reduzir evitação/medo condicionado via exposição gradual segura.";
-        base.quando="Ansiedade, pânico, fobias, TEPT leve.";
-        base.sessao1="• Hierarquia (0–100); interoceptiva leve + recuperação 4‑4‑6; psicoed. habituação.";
-        base.sessao2="• Situacional passo 1 + SUDS; reduzir reasseguramento.";
-        base.sessao3="• Avançar 1–2 níveis; significados pós‑exposição.";
-        base.tarefa="2 exposições curtas/dia + SUDS.";
-        base.indicadores="Queda de SUDS e evitação; aproximação de metas.";
-        base.cuidados="Respeitar janela; não expor sem suporte.";
-        break;
+        return [
+          H("EXPOSICAO"),
+          S("Objetivo","Diminuir evitação e medo condicionado com exposição gradual segura."),
+          "Sessão 1 — Planejamento",
+          "  - Hierarquia (0–100) + psicoed de habituação/inibição do medo.",
+          "  - Interoceptiva leve (ex.: giro 30s) + recuperação 4‑4‑6.",
+          "Sessão 2 — Situações reais",
+          "  - Exposição situacional passo 1 + SUDS; reduzir reasseguramento.",
+          "Sessão 3 — Avanço",
+          "  - Subir 1–2 níveis; consolidar significados aprendidos.",
+          S("Tarefa","2 exposições curtas/dia + registro SUDS antes/depois."),
+          S("Indicadores","Queda progressiva de SUDS e evitação; aproximação de metas."),
+          S("Cuidados","Respeitar janela; evitar exposição sem suporte quando risco alto.")
+        ].join("\\n");
       case "IMAGO":
-        base.objetivo="Aumentar empatia e conexão via diálogo estruturado (espelho, validação, empatia).";
-        base.quando="Conflitos de casal; escaladas.";
-        base.sessao1="• Ensinar Diálogo Imago; treino com tema leve.";
-        base.sessao2="• Prática com tema real; pedidos claros/positivos.";
-        base.sessao3="• Gatilhos infantis; rituais de conexão.";
-        base.tarefa="Ritual 10’/dia (5’ fala, 5’ escuta).";
-        base.indicadores="Menos escaladas; mais validação.";
-        base.cuidados="Suspender se houver violência.";
-        break;
+        return [
+          H("IMAGO"),
+          S("Objetivo","Aumentar empatia e conexão via diálogo estruturado."),
+          "Sessão 1 — Técnica",
+          "  - Ensinar espelho, validação e empatia; tema leve para treino.",
+          "Sessão 2 — Tema real",
+          "  - Pedidos claros e positivos; ajustar críticas/defesas.",
+          "Sessão 3 — Integração",
+          "  - Gatilhos infantis e rituais de conexão.",
+          S("Tarefa","Ritual 10’/dia: 5’ fala + 5’ escuta espelhada."),
+          S("Indicadores","Menos escaladas; mais validação espontânea."),
+          S("Cuidados","Suspender se houver violência; priorizar segurança.")
+        ].join("\\n");
       case "IBCT":
-        base.objetivo="Aumentar aceitação e flexibilidade do casal; reduzir padrões coercitivos.";
-        base.quando="Impasse com crítica/defesa/evitação.";
-        base.sessao1="• Formulação do impasse; tentativas fracassadas.";
-        base.sessao2="• Reatividade mínima; tolerância ao desconforto.";
-        base.sessao3="• Manutenção e acordos explícitos.";
-        base.tarefa="Experimentos semanais de aceitação + acordos escritos.";
-        base.indicadores="Menos brigas; senso de time.";
-        base.cuidados="Encaminhar se houver abuso.";
-        break;
+        return [
+          H("IBCT"),
+          S("Objetivo","Promover aceitação, flexibilidade e redução de padrões coercitivos."),
+          "Sessão 1 — Formulação do impasse",
+          "  - Padrão crítica/defesa/evitação; tentativas que falharam.",
+          "Sessão 2 — Tolerância ao desconforto",
+          "  - Reatividade mínima; pequenas concessões recíprocas.",
+          "Sessão 3 — Manutenção",
+          "  - Acordos explícitos; plano de revisão.",
+          S("Tarefa","Experimentos semanais de aceitação + acordos escritos."),
+          S("Indicadores","Redução de brigas; senso de time."),
+          S("Cuidados","Encaminhar se houver abuso.")
+        ].join("\\n");
       case "PARENTAL":
-        base.objetivo="Fortalecer repertório parental e consistência de limites/afeto.";
-        base.quando="Dificuldades educativas, comportamentos desafiadores.";
-        base.sessao1="• Regras claras; reforço positivo; economia de fichas.";
-        base.sessao2="• Instruções eficazes (curtas, específicas).";
-        base.sessao3="• Rotina visual; reunião familiar semanal.";
-        base.tarefa="Aplicar 1 técnica/dia + registro.";
-        base.indicadores="Menos birras; mais combinados cumpridos.";
-        base.cuidados="Ajustar à idade; observar neurodivergência.";
-        break;
+        return [
+          H("PARENTAL"),
+          S("Objetivo","Ampliar repertório parental com limites consistentes e afeto."),
+          "Sessão 1 — Regras e reforço",
+          "  - Regras claras; reforço positivo; economia de fichas.",
+          "Sessão 2 — Instruções eficazes",
+          "  - Comandos curtos, específicos e consistentes.",
+          "Sessão 3 — Rotina e reunião",
+          "  - Rotina visual; reunião familiar semanal.",
+          S("Tarefa","Aplicar 1 técnica/dia + registro de sucessos."),
+          S("Indicadores","Menos birras; mais combinados cumpridos."),
+          S("Cuidados","Ajustar à idade; observar sinais de neurodivergência.")
+        ].join("\\n");
       case "LUTO":
-        base.objetivo="Acompanhar luto com validação, significado e integração.";
-        base.quando="Perdas recentes ou luto complicado.";
-        base.sessao1="• Linha do tempo do vínculo; ritual de lembrança.";
-        base.sessao2="• Ambivalências/culpas; datas sensíveis.";
-        base.sessao3="• Continuidade do vínculo interno; reengajamento.";
-        base.tarefa="Diário de valores (10’/dia).";
-        base.indicadores="Menos culpa/entorpecimento; mais sentido.";
-        base.cuidados="Encaminhar se ideação persistente.";
-        break;
+        return [
+          H("LUTO"),
+          S("Objetivo","Acompanhar luto com validação, significado e integração."),
+          "Sessão 1 — Vínculo",
+          "  - Linha do tempo e ritual de lembrança (carta/objeto).",
+          "Sessão 2 — Ambivalências",
+          "  - Culpa/raiva; preparar datas sensíveis.",
+          "Sessão 3 — Continuidade",
+          "  - Vínculo interno e reengajamento com valores.",
+          S("Tarefa","Diário de valores 10’/dia."),
+          S("Indicadores","Menos culpa/entorpecimento; retomada gradual de atividades."),
+          S("Cuidados","Atenção a ideação persistente → encaminhar.")
+        ].join("\\n");
       case "SUBSTANCIAS":
-        base.objetivo="Reduzir consumo; aumentar análise funcional e habilidades.";
-        base.quando="Uso problemático/abusivo; recaídas.";
-        base.sessao1="• ABC; disparadores; barreiras e substituições.";
-        base.sessao2="• DBT tolerância à aflição; contrato de sobriedade.";
-        base.sessao3="• Prevenção de recaída; planos alto risco.";
-        base.tarefa="Registro de gatilhos/respostas.";
-        base.indicadores="Mais sobriedade; menos lapsos.";
-        base.cuidados="Avaliar comorbidades; encaminhar quando necessário.";
-        break;
+        return [
+          H("SUBSTANCIAS"),
+          S("Objetivo","Reduzir consumo e risco; aumentar habilidades de enfrentamento."),
+          "Sessão 1 — Análise funcional",
+          "  - ABC de episódios; barreiras e substituições compatíveis.",
+          "Sessão 2 — Habilidades",
+          "  - DBT tolerância à aflição; contrato de sobriedade + rede.",
+          "Sessão 3 — Prevenção de recaída",
+          "  - Estratégias para situações de alto risco.",
+          S("Tarefa","Registro de gatilhos e estratégias usadas."),
+          S("Indicadores","Janelas de sobriedade maiores; menos lapsos."),
+          S("Cuidados","Avaliar comorbidades; possível co‑encaminhamento.")
+        ].join("\\n");
       case "BURNOUT":
-        base.objetivo="Restaurar energia, limites e sentido; reduzir exaustão.";
-        base.quando="Estresse crônico ocupacional.";
-        base.sessao1="• Estressores × valores; micro‑recuperações.";
-        base.sessao2="• DBT para limites; agenda de energia.";
-        base.sessao3="• Rotina com pausas e rituais.";
-        base.tarefa="Checklist 5‑5‑5 diário.";
-        base.indicadores="Menos exaustão; mais engajamento.";
-        base.cuidados="Monitorar sintomas depressivos.";
-        break;
-      case "HUMAN_DESIGN":
-        base.objetivo="Reflexão identitária e decisões alinhadas (complementar).";
-        base.quando="Interesse em integração espiritual/identitária.";
-        base.sessao1="• Psicoed breve + decisão alinhada.";
-        base.sessao2="• Observar padrões energéticos reais.";
-        base.sessao3="• Integrar com metas e limites saudáveis.";
-        base.tarefa="Registro de decisões/sensações.";
-        base.indicadores="Mais coerência interna; clareza de limites.";
-        base.cuidados="Evitar rótulos rígidos.";
-        break;
+        return [
+          H("BURNOUT"),
+          S("Objetivo","Reduzir exaustão e cinismo; restaurar energia e sentido."),
+          "Sessão 1 — Mapa de estressores/valores",
+          "  - Micro‑recuperações diárias (respiração, pausa, micro‑alegria).",
+          "Sessão 2 — Limites",
+          "  - DBT de efetividade interpessoal; agenda de energia.",
+          "Sessão 3 — Recontratação da rotina",
+          "  - Pausas programadas e rituais de encerramento do dia.",
+          S("Tarefa","Checklist 5‑5‑5 diário."),
+          S("Indicadores","Menos exaustão; mais engajamento com valores."),
+          S("Cuidados","Rastreamento de depressão/ansiedade.")
+        ].join("\\n");
       case "MEMORIA":
-        base.objetivo="Reforçar memória funcional e atenção.";
-        base.quando="Queixas leves/moderadas de memória/foco.";
-        base.sessao1="• Atenção sustentada (2×5’/dia) e mnemônicos.";
-        base.sessao2="• Rotina externa: listas, alarmes, checklists.";
-        base.sessao3="• Sono/higiene/atividade física.";
-        base.tarefa="Planilha + 2 exercícios diários.";
-        base.indicadores="Menos esquecimentos; mais autonomia.";
-        base.cuidados="Avaliação médica se persistir.";
-        break;
+        return [
+          H("MEMORIA"),
+          S("Objetivo","Reforçar memória funcional e atenção com treino estruturado."),
+          "Sessão 1 — Atenção e mnemônicos",
+          "  - 2×5’/dia de atenção sustentada; loci/acrósticos.",
+          "Sessão 2 — Suportes externos",
+          "  - Listas, alarmes, checklists; rotinas fixas.",
+          "Sessão 3 — Hábitos de base",
+          "  - Sono, atividade física, alimentação.",
+          S("Tarefa","Planilha simples + 2 exercícios/dia."),
+          S("Indicadores","Menos esquecimentos; maior autonomia."),
+          S("Cuidados","Encaminhar se queixa persistente/progressiva.")
+        ].join("\\n");
       case "FAP":
-        base.objetivo="Modelar CRBs e reforçar melhoras no aqui‑e‑agora.";
-        base.quando="Padrões relacionais; esquiva de intimidade.";
-        base.sessao1="• Identificar CRBs problema/melhora; nomear/reforçar.";
-        base.sessao2="• Evocar comportamentos desejados; tarefas vivenciais.";
-        base.sessao3="• Generalização para vida diária.";
-        base.tarefa="Diário de experimentos relacionais.";
-        base.indicadores="Mais abertura; menos esquiva relacional.";
-        base.cuidados="Limites/aliança terapêutica claros.";
-        break;
+        return [
+          H("FAP"),
+          S("Objetivo","Evocar e reforçar em sessão os comportamentos relevantes clinicamente (CRBs)."),
+          "Sessão 1 — Identificação",
+          "  - CRB1 (problema em sessão) e CRB2 (melhora desejada).",
+          "Sessão 2 — Evocar e reforçar",
+          "  - Feedbacks imediatos; tarefas vivenciais.",
+          "Sessão 3 — Generalização",
+          "  - Transferir para contextos externos; reforço diferencial.",
+          S("Tarefa","Diário de experimentos relacionais."),
+          S("Indicadores","Mais abertura, contato e assertividade; menos esquiva."),
+          S("Cuidados","Manter limites e contrato explícitos.")
+        ].join("\\n");
+      case "ABA":
+        return [
+          H("ABA"),
+          S("Objetivo","Intervenções baseadas em análise funcional para desenvolvimento de habilidades."),
+          "Sessões iniciais — Avaliação",
+          "  - Linha de base; definição de metas objetivas; reforço diferencial.",
+          "Implementação",
+          "  - Encadeamento de tarefas, prompts e fading.",
+          S("Tarefa","Registro de tentativas com reforço claro."),
+          S("Indicadores","Aquisição de habilidades-alvo; redução de comportamentos problema."),
+          S("Cuidados","Individualização por perfil e idade.")
+        ].join("\\n");
       case "FAMILIAR_CASAL":
-        base.objetivo="Alinhar visão sistêmica, papéis e acordos.";
-        base.quando="Conflitos persistentes familiares/casal.";
-        base.sessao1="• Genograma breve + papéis; contratos de convivência.";
-        base.sessao2="• Regras de comunicação e reuniões familiares.";
-        base.sessao3="• Rotina de manutenção.";
-        base.tarefa="Reunião semanal 30’.";
-        base.indicadores="Mais cooperação e previsibilidade.";
-        base.cuidados="Priorizar segurança.";
-        break;
+        return [
+          H("FAMILIAR_CASAL"),
+          S("Objetivo","Alinhar visão sistêmica; papéis e acordos funcionais."),
+          "Sessão 1 — Genograma e papéis",
+          "  - Contratos de convivência: combinados claros e observáveis.",
+          "Sessão 2 — Comunicação",
+          "  - Regras para reunião familiar; turnos e validação.",
+          "Sessão 3 — Manutenção",
+          "  - Rotina de checagem semanal.",
+          S("Tarefa","Reunião semanal 30’. Registre 3 pontos bons e 1 ajuste."),
+          S("Indicadores","Mais cooperação e previsibilidade."),
+          S("Cuidados","Segurança sempre em primeiro lugar.")
+        ].join("\\n");
       default:
-        base.objetivo="Organizar prioridades de intervenção inicial.";
-        base.quando="Quadro inespecífico ou misto.";
-        base.sessao1="• Escuta estruturada; metas 30–90 dias.";
-        base.sessao2="• Regulação breve e treino de limites.";
-        base.sessao3="• Plano de continuidade e reavaliação.";
-        base.tarefa="Roteiro simples de hábitos/limites.";
-        base.indicadores="Mais clareza e adesão.";
-        base.cuidados="Revisar sinais de risco.";
+        return "—";
     }
-    return [
-      `• Objetivo: ${base.objetivo}`,
-      `• Quando usar: ${base.quando}`,
-      `• Roteiro (Sessão 1): ${base.sessao1}`,
-      `• Roteiro (Sessão 2): ${base.sessao2}`,
-      `• Roteiro (Sessão 3): ${base.sessao3}`,
-      `• Tarefa para casa: ${base.tarefa}`,
-      `• Indicadores de progresso: ${base.indicadores}`,
-      `• Cuidados/Contraindicações: ${base.cuidados}`
-    ].join("\\n");
   }
 
   function chooseTopTechs(score){
@@ -300,11 +333,12 @@
 
     const score = scoreTechs({sintomas, padroes, prefs});
     const top3 = chooseTopTechs(score);
-    const blocos = top3.map(k => `▶ ${TECHS[k].nome}\\n` + protocolFor(k));
+    const blocos = top3.map(k => `<div class="block"><strong>${TECHS[k].nome}</strong><pre>${protocolFor(k)}</pre></div>`);
 
     const tag = t => `<span class="tag">${t}</span>`;
     const tagify = arr => arr.length ? arr.map(tag).join(" ") : "—";
 
+    // NOTE: real newlines for readability only; HTML ignores them (not \n literals)
     fields.parecer.innerHTML = [
       `<h4>Dados do caso</h4>`,
       `<div><strong>Paciente:</strong> ${nome||"—"} • <strong>Idade:</strong> ${idade||"—"} • <strong>Sev.:</strong> ${severidade||0}/10</div>`,
@@ -315,13 +349,13 @@
       `<div><strong>Preferências:</strong> ${tagify($$(".pref:checked").map(c=>c.value))}</div>`,
       `<div><strong>Riscos/atenção:</strong> ${riscos||"—"}</div>`,
       `<div><strong>Observações do terapeuta:</strong> ${obs||"—"}</div>`,
-      `<hr>`,
+      `<div class="sep"></div>`,
       `<h4>Técnicas selecionadas (máx. 3)</h4>`,
       `<div>${top3.map(k=>tag(TECHS[k].nome)).join(" ")}</div>`,
-      `<hr>`,
+      `<div class="sep"></div>`,
       `<h4>Roteiro detalhado (primeiros 3 encontros)</h4>`,
-      `<div>${blocos.map(b=> `<pre>${b}</pre>`).join("<br/>")}</div>`
-    ].join("\\n");
+      blocos.join("")
+    ].join("");
 
     // Texto puro para PDF
     const header = `Paciente: ${nome||"—"}   |   Idade: ${idade||"—"}   |   Data: ${new Intl.DateTimeFormat("pt-BR").format(new Date())}
@@ -329,27 +363,20 @@ Severidade: ${severidade||0}/10
 Queixa: ${queixa||"—"}
 Objetivo: ${objetivo||"—"}
 `;
-    const texto = header + "\\n" + blocos.join("\\n\\n");
+    const texto = header + "\\n" + top3.map(k => `▶ ${TECHS[k].nome}\\n${protocolFor(k)}`).join("\\n\\n");
     return {texto};
   }
 
   function gerar(){
-    try{
-      buildParecer();
-      postHeight();
-      // mostrar FAB PDF sempre depois de gerar
-      const fab = document.getElementById("fab-pdf");
-      if(fab) fab.style.display = "flex";
-      window.scrollTo({top:0, behavior:"smooth"});
-    }catch(e){
-      console.error("Erro ao gerar protocolo:", e);
-      alert("Ops! Algo impediu gerar o protocolo. Recarregue a página. Se persistir, me mande um print do Console.");
-    }
+    buildParecer();
+    const fab = document.getElementById("fab-pdf"); if(fab) fab.style.display = "flex";
+    postHeight();
+    window.scrollTo({top:0, behavior:"smooth"});
   }
 
   async function baixarPDF(){
     const { jsPDF } = window.jspdf || {};
-    if (!jsPDF){ alert("PDF off-line: use o botão de impressão do navegador (Salvar como PDF)."); return; }
+    if (!jsPDF){ alert("PDF off-line: coloque o arquivo local em /vendor/jspdf.umd.min.js ou habilite a CDN."); return; }
     const nome = (fields.nome.value.trim() || "Paciente");
     const dataStr = new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(new Date());
     const {texto} = buildParecer();
