@@ -41,3 +41,34 @@ footer{padding-bottom:28px}
   .grid > .card:nth-child(3){border:none; box-shadow:none}
   body{background:#fff}
 }
+
+.parecer-toolbar{
+  position: sticky; top: -8px; z-index: 2; background: linear-gradient(#ffffff, #ffffffcc);
+  padding: 6px 0 8px; margin: -6px 0 8px; backdrop-filter: blur(2px);
+  display: flex; gap: 8px; justify-content: flex-end; border-bottom: 1px dashed var(--line);
+}
+.btn.sm{padding:6px 10px; font-weight:700; border-radius:12px}
+.fab{
+  position: fixed; right: 16px; bottom: 16px;
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--accent); color:#fff; border:0; box-shadow: var(--shadow);
+  font-size:20px; cursor:pointer; display:none; align-items:center; justify-content:center; z-index: 50;
+}
+.fab:hover{ background: var(--accent2);}
+@media print{ .parecer-toolbar, .fab{ display:none !important; } }
+
+/* Toolbar e FAB já adicionados na v4; mantidos aqui */
+.parecer-toolbar{
+  position: sticky; top: -8px; z-index: 2; background: linear-gradient(#ffffff, #ffffffcc);
+  padding: 6px 0 8px; margin: -6px 0 8px; backdrop-filter: blur(2px);
+  display: flex; gap: 8px; justify-content: flex-end; border-bottom: 1px dashed var(--line);
+}
+.btn.sm{padding:6px 10px; font-weight:700; border-radius:12px}
+.fab{
+  position: fixed; right: 16px; bottom: 16px;
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--accent); color:#fff; border:0; box-shadow: var(--shadow);
+  font-size:20px; cursor:pointer; display:none; align-items:center; justify-content:center; z-index: 50;
+}
+.fab:hover{ background: var(--accent2);}
+@media print{ .parecer-toolbar, .fab{ display:none !important; } }

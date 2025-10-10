@@ -27,6 +27,30 @@
     limpar: $("#limpar"),
   };
 
+  // ---- Auto-resize para embed: envia altura ao parent (Hotmart/Wix) ----
+  function postHeight(){
+    var h = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+    try{ parent.postMessage({type:'thse-resize', height:h}, '*'); }catch(e){}
+  }
+  // Observa mudanças no body para recalcular altura
+  const ro = new ResizeObserver(()=> postHeight());
+  ro.observe(document.body);
+  window.addEventListener('load', postHeight);
+  window.addEventListener('resize', postHeight);
+
+
+  // extra controls (parecer toolbar + FAB)
+  const btnPdf2 = document.getElementById("pdf2");
+  const btnPrint2 = document.getElementById("print2");
+  const fabPdf = document.getElementById("fab-pdf");
+  function setFabVisible(v){ if(fabPdf) fabPdf.style.display = v ? "flex" : "none"; }
+  function jsPdfAvailable(){ return !!(window.jspdf && window.jspdf.jsPDF); }
+
+  if(btnPdf2) btnPdf2.addEventListener("click", baixarPDF);
+  if(btnPrint2) btnPrint2.addEventListener("click", imprimir);
+  if(fabPdf) fabPdf.addEventListener("click", baixarPDF);
+
+
   const TECHS = {
     "CFT": { nome:"Terapia Focada na Compaixão (CFT)"},
     "FAP": { nome:"Psicoterapia Analítica Funcional (FAP)"},
@@ -57,6 +81,30 @@
     "DESENV_GLOBAL": { nome:"Transtornos globais de desenvolvimento"},
     "PSICANALISE_HUM": { nome:"Psicanálise humanista"}
   };
+
+  // ---- Auto-resize para embed: envia altura ao parent (Hotmart/Wix) ----
+  function postHeight(){
+    var h = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+    try{ parent.postMessage({type:'thse-resize', height:h}, '*'); }catch(e){}
+  }
+  // Observa mudanças no body para recalcular altura
+  const ro = new ResizeObserver(()=> postHeight());
+  ro.observe(document.body);
+  window.addEventListener('load', postHeight);
+  window.addEventListener('resize', postHeight);
+
+
+  // extra controls (parecer toolbar + FAB)
+  const btnPdf2 = document.getElementById("pdf2");
+  const btnPrint2 = document.getElementById("print2");
+  const fabPdf = document.getElementById("fab-pdf");
+  function setFabVisible(v){ if(fabPdf) fabPdf.style.display = v ? "flex" : "none"; }
+  function jsPdfAvailable(){ return !!(window.jspdf && window.jspdf.jsPDF); }
+
+  if(btnPdf2) btnPdf2.addEventListener("click", baixarPDF);
+  if(btnPrint2) btnPrint2.addEventListener("click", imprimir);
+  if(fabPdf) fabPdf.addEventListener("click", baixarPDF);
+
 
   function getSelections(){
     const sintomas = $$(".sym:checked").map(c=>c.value);
@@ -113,6 +161,30 @@
       objetivo: "", quando: "", sessao1: "", sessao2: "", sessao3: "",
       tarefa: "", indicadores: "", cuidados: ""
     };
+
+  // ---- Auto-resize para embed: envia altura ao parent (Hotmart/Wix) ----
+  function postHeight(){
+    var h = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+    try{ parent.postMessage({type:'thse-resize', height:h}, '*'); }catch(e){}
+  }
+  // Observa mudanças no body para recalcular altura
+  const ro = new ResizeObserver(()=> postHeight());
+  ro.observe(document.body);
+  window.addEventListener('load', postHeight);
+  window.addEventListener('resize', postHeight);
+
+
+  // extra controls (parecer toolbar + FAB)
+  const btnPdf2 = document.getElementById("pdf2");
+  const btnPrint2 = document.getElementById("print2");
+  const fabPdf = document.getElementById("fab-pdf");
+  function setFabVisible(v){ if(fabPdf) fabPdf.style.display = v ? "flex" : "none"; }
+  function jsPdfAvailable(){ return !!(window.jspdf && window.jspdf.jsPDF); }
+
+  if(btnPdf2) btnPdf2.addEventListener("click", baixarPDF);
+  if(btnPrint2) btnPrint2.addEventListener("click", imprimir);
+  if(fabPdf) fabPdf.addEventListener("click", baixarPDF);
+
 
     switch(techKey){
       case "GESTALT":
@@ -347,17 +419,14 @@ Técnicas selecionadas (máx. 3): ${top3.map(k=>TECHS[k].nome).join(" • ")}
     return {texto, top3};
   }
 
-  function gerar(){ buildParecer(); window.scrollTo({top:0, behavior:"smooth"}); }
+  function gerar(){ buildParecer(); setFabVisible(true); postHeight(); window.scrollTo({top:0, behavior:"smooth"}); }
 
   async function baixarPDF(){
     const { jsPDF } = window.jspdf || {};
     const nome = (fields.nome.value.trim() || "Paciente");
     const dataStr = new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(new Date());
     const {texto} = buildParecer();
-    if (!jsPDF){
-      alert("Se o PDF não carregar, use o botão Imprimir e salve como PDF (desative cabeçalho/rodapé do navegador).");
-      return;
-    }
+    if (!jsPDF){ alert("PDF off-line: clique em Imprimir e salve como PDF (desative cabeçalho/rodapé do navegador)."); return; }
     const doc = new jsPDF({unit:"pt", format:"a4"});
     const margin = 40, maxWidth = 515;
     doc.setFont("Times","Bold"); doc.setFontSize(14);
@@ -374,7 +443,7 @@ Técnicas selecionadas (máx. 3): ${top3.map(k=>TECHS[k].nome).join(" • ")}
   }
 
   function imprimir(){ window.print(); }
-  function limpar(){
+  function limpar(){ setFabVisible(false); postHeight();
     ["nome","idade","queixa","objetivo","riscos","obs"].forEach(id=> fields[id].value="");
     $$(".sym, .pat, .pref").forEach(c=> c.checked=false);
     fields.severidade.value=6; document.getElementById("sevVal").textContent="6";

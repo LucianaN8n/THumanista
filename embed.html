@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>THSE – Embed</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <style>body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}</style>
+</head>
+<body>
+  <script>
+    // Redireciona para a raiz, preservando querystring (ex.: ?embed=hotmart)
+    var qs = window.location.search || "";
+    window.location.replace("/index.html"+qs);
+  </script>
+</body>
+</html>

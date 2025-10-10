@@ -6,7 +6,20 @@
   <title>THSE – Mentor Humanista (Gestalt + Comportamental)</title>
   <meta name="description" content="App de apoio ao terapeuta: analisa anamnese e sugere até 3 técnicas (Gestalt, DBT, CFT, FAP, etc.) com protocolo detalhado e PDF.">
   <link rel="stylesheet" href="styles.css" />
-  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" crossorigin="anonymous" defer></script>
+  <!-- jsPDF local (preferido). Se ausente, cairemos para CDN automaticamente. -->
+  <script src="vendor/jspdf.umd.min.js" defer></script>
+  <script>
+    // Fallback para CDN se jsPDF local não estiver presente depois do DOM pronto
+    document.addEventListener('DOMContentLoaded', function(){
+      setTimeout(function(){
+        if(!(window.jspdf && window.jspdf.jsPDF)){
+          var s=document.createElement('script');
+          s.src='https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js';
+          s.defer=true; document.head.appendChild(s);
+        }
+      }, 300);
+    });
+  </script>
 </head>
 <body>
   <header class="container">
@@ -109,11 +122,13 @@
     </section>
 
     <section class="card">
+      <div class="parecer-toolbar"><button id="pdf2" class="btn outline sm">⬇️ Baixar PDF</button><button id="print2" class="btn ghost sm">🖨️ Imprimir</button></div>
       <h2>3) Parecer do Especialista</h2>
       <div id="parecer" class="parecer">
         <p>Preencha a anamnese e clique em <strong>Gerar protocolo</strong>. O sistema selecionará até <strong>3 técnicas</strong> e entregará um roteiro detalhado (Sessão 1–3), tarefas, indicadores e cuidados.</p>
       </div>
     </section>
+    <button id="fab-pdf" class="fab" title="Baixar PDF">⬇️</button>
   </main>
 
   <footer class="container center muted">
