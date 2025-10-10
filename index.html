@@ -1,119 +1,49 @@
-<!doctype html>
-<html lang="pt-br">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>THSE – Mentor Humanista (Gestalt • DBT • CFT)</title>
-  <meta name="description" content="Anamnese + técnicas (máx. 3) com guias interativos: passo-a-passo, timers, checklist e PDF.">
-  <link rel="stylesheet" href="styles.css" />
-  <script src="vendor/jspdf.umd.min.js" defer></script>
-</head>
-<body>
-  <header class="container pagebar">
-    <h1>🌿 THSE – Mentor Humanista</h1>
-    <div class="pagebar-actions">
-      <button id="pdfTop" class="btn outline sm">⬇️ PDF</button>
+<main id="app" class="wrap main">
+  <section class="card">
+    <h2>Anamnese Humanista</h2>
+    <div class="grid2">
+      <label>Nome do cliente
+        <input id="f-nome" type="text" placeholder="Ex.: Ana Lima">
+      </label>
+      <label>Queixa principal
+        <input id="f-queixa" type="text" placeholder="Ex.: ansiedade leve">
+      </label>
     </div>
-  </header>
 
-  <main class="container grid">
-    <section class="card compact" id="card-dados">
-      <h2>1) Dados do paciente</h2>
-      <div class="row tight">
-        <label>Nome
-          <input type="text" id="nome" placeholder="Ex.: Maria A." />
-        </label>
-        <label>Idade
-          <input type="number" id="idade" min="0" max="120" placeholder="34" />
-        </label>
-      </div>
-      <div class="row tight">
-        <label>Queixa
-          <textarea id="queixa" rows="2" placeholder="Ex.: isolamento social, medo de rejeição…"></textarea>
-        </label>
-      </div>
-      <div class="row tight last">
-        <label>Objetivo do paciente
-          <textarea id="objetivo" rows="2" placeholder="Ex.: comunicar-se melhor, ampliar vínculos…"></textarea>
-        </label>
-      </div>
-    </section>
+    <label>Intensidade (0–10)
+      <input id="f-intensidade" type="number" min="0" max="10" value="6">
+    </label>
 
-    <section class="card compact" id="card-anamnese">
-      <h2>2) Anamnese breve</h2>
-      <div class="qgroup">
-        <h3>Sintomas / temas</h3>
-        <div class="pillbox">
-          <label><input type="checkbox" value="ansiedade" class="sym"> Ansiedade/pânico</label>
-          <label><input type="checkbox" value="depressao" class="sym"> Depressão/apatia</label>
-          <label><input type="checkbox" value="trauma" class="sym"> Trauma/TEPT</label>
-          <label><input type="checkbox" value="luto" class="sym"> Lutos e perdas</label>
-          <label><input type="checkbox" value="casal" class="sym"> Casal/conflitos</label>
-          <label><input type="checkbox" value="toxico" class="sym"> Relac. tóxicos</label>
-          <label><input type="checkbox" value="substancias" class="sym"> Substâncias</label>
-          <label><input type="checkbox" value="burnout" class="sym"> Burnout</label>
-          <label><input type="checkbox" value="memoria" class="sym"> Memória</label>
-        </div>
-      </div>
+    <label>Quando piora?
+      <input id="f-gatilho" type="text" placeholder="Ex.: à noite, antes de reuniões">
+    </label>
 
-      <div class="qgroup smallgap">
-        <h3>Severidade (0–10)</h3>
-        <input type="range" id="severidade" min="0" max="10" step="1" value="6" oninput="sevVal.textContent=this.value">
-        <div>Valor: <strong id="sevVal">6</strong></div>
-      </div>
+    <label>O que esse padrão “compra” pra você?
+      <select id="f-funcao">
+        <option value="alivio">Alívio rápido</option>
+        <option value="evitacao">Evitar conflito/situação</option>
+        <option value="aprovacao">Buscar aprovação</option>
+        <option value="controle">Controlar/rigidez</option>
+      </select>
+    </label>
 
-      <div class="qgroup">
-        <h3>Padrões (2–4 sem.)</h3>
-        <div class="pillbox">
-          <label><input type="checkbox" value="evitacao" class="pat"> Evitação</label>
-          <label><input type="checkbox" value="autocritica" class="pat"> Autocrítica/verg.</label>
-          <label><input type="checkbox" value="impulsividade" class="pat"> Impulsividade</label>
-          <label><input type="checkbox" value="ruminacao" class="pat"> Ruminação</label>
-          <label><input type="checkbox" value="conflito_relacional" class="pat"> Conflitos/rupturas</label>
-          <label><input type="checkbox" value="hipervigilancia" class="pat"> Hipervigilância</label>
-          <label><input type="checkbox" value="apatia" class="pat"> Afastamento</label>
-          <label><input type="checkbox" value="procrastinacao" class="pat"> Procrastinação</label>
-        </div>
-      </div>
+    <label>Objetivo do cliente (1 frase)
+      <input id="f-objetivo" type="text" placeholder="Ex.: falar em público com menos trêmula">
+    </label>
 
-      <div class="row tight">
-        <label>Riscos/atenção
-          <textarea id="riscos" rows="2" placeholder="Ex.: ideação suicida, violência, uso abusivo…"></textarea>
-        </label>
-      </div>
+    <label>Preferências/limites (opcional)
+      <input id="f-preferencias" type="text" placeholder="Ex.: prefiro exercícios de respiração a imaginação">
+    </label>
 
-      <div class="row tight last">
-        <label>Observações do terapeuta
-          <textarea id="obs" rows="2" placeholder="Hipóteses iniciais, contexto, preferências de setting…"></textarea>
-        </label>
-      </div>
+    <button id="btn-gerar" class="btn btn-primary" style="margin-top:10px">Gerar Protocolo</button>
+  </section>
 
-      <div class="actions topgap">
-        <button id="gerar" class="btn">🧭 Gerar protocolo</button>
-        <button id="pdf" class="btn outline">⬇️ PDF</button>
-        <button id="limpar" class="btn ghost">🧹 Limpar</button>
-      </div>
-    </section>
-
-    <section class="card compact" id="card-parecer">
-      <div class="parecer-toolbar">
-        <strong>Protocolo</strong>
-        <span class="spacer"></span>
-        <button id="pdf2" class="btn outline sm">⬇️ PDF</button>
-      </div>
-      <h2>3) Parecer do Especialista</h2>
-      <div id="parecer" class="parecer">
-        <p>Preencha a anamnese e clique em <strong>Gerar protocolo</strong>. Você receberá um roteiro passo-a-passo com <strong>guias interativos</strong> (accordions + timers), duração por técnica, checklists e PDF.</p>
-      </div>
-    </section>
-
-    <button id="fab-pdf" class="fab" title="Baixar PDF">⬇️</button>
-  </main>
-
-  <footer class="container center muted">
-    <p>THSE – Mentor Humanista • Instituto Saber Consciente • <span id="today"></span></p>
-  </footer>
-
-  <script src="app.js" defer></script>
-</body>
-</html>
+  <section id="editor" class="card" style="display:none">
+    <h2>Protocolo sugerido (edite livremente)</h2>
+    <div id="plano-editor"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+      <button id="btn-pdf" class="btn btn-primary">Baixar PDF</button>
+      <button id="btn-refazer" class="btn">Refazer a anamnese</button>
+    </div>
+  </section>
+</main>
