@@ -6,7 +6,6 @@
   <title>THSE – Mentor Humanista (Gestalt + Comportamental)</title>
   <meta name="description" content="App de apoio ao terapeuta: analisa anamnese e sugere até 3 técnicas (Gestalt, DBT, CFT, FAP, etc.) com protocolo detalhado e PDF.">
   <link rel="stylesheet" href="styles.css" />
-  <!-- jsPDF via CDN (UMD, sem eval). Fallback gracioso se offline. -->
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" crossorigin="anonymous" defer></script>
 </head>
 <body>
@@ -16,7 +15,6 @@
   </header>
 
   <main class="container grid">
-    <!-- Lado esquerdo: formulário -->
     <section class="card">
       <h2>1) Dados do paciente</h2>
       <div class="row">
@@ -67,7 +65,7 @@
       </div>
 
       <div class="qgroup">
-        <h3>Padrões observáveis (assinale os que ocorreram nas últimas 2–4 semanas):</h3>
+        <h3>Padrões observáveis (últimas 2–4 semanas):</h3>
         <div class="pillbox">
           <label><input type="checkbox" value="evitacao" class="pat"> Evitação de situações/emoções</label>
           <label><input type="checkbox" value="autocritica" class="pat"> Autocrítica intensa / vergonha</label>
@@ -105,11 +103,11 @@
       <div class="actions">
         <button id="gerar" class="btn">🧭 Gerar protocolo</button>
         <button id="pdf" class="btn outline">⬇️ Baixar PDF</button>
+        <button id="print" class="btn ghost">🖨️ Imprimir</button>
         <button id="limpar" class="btn ghost">🧹 Limpar</button>
       </div>
     </section>
 
-    <!-- Lado direito: parecer -->
     <section class="card">
       <h2>3) Parecer do Especialista</h2>
       <div id="parecer" class="parecer">

@@ -1,15 +1,15 @@
-# THSE – Mentor Humanista (Gestalt + Comportamental)
+# THSE – Mentor Humanista (Gestalt + Comportamental) – v2
+- Sem comentários de BÔNUS no rodapé/parecer/PDF.
+- Layout do topo mais compacto.
+- Botão **Imprimir** (window.print) + CSS de impressão para sair apenas o Parecer.
 
-App pronto para Netlify (HTML/CSS/JS).
-- Abra o zip e suba a pasta **thse_mentor_app** no Netlify (Deploy folder).
-- Arquivos: `index.html`, `styles.css`, `app.js`
-- Geração de PDF usa **jsPDF via CDN** (sem eval). Se estiver bloqueado, o app sugere imprimir como PDF.
+## Deploy
+Suba esta pasta no Netlify (deploy estático).
 
-## Como usar
-1. Preencha os campos do paciente e a anamnese.
-2. Clique em **Gerar protocolo** para ver o parecer detalhado (seleção automática de até 3 técnicas + roteiro de 3 sessões).
-3. Clique em **Baixar PDF** para salvar o protocolo com nome do paciente e data.
-4. **Limpar** para reiniciar o formulário.
+## Uso
+1) Preencha a anamnese → **Gerar protocolo**
+2) **Baixar PDF** (jsPDF) ou **Imprimir** (mostra só o Parecer)
+3) **Limpar** para reiniciar
 
-> Dica: Para embutir no Wix/Hotmart, publique no Netlify e use um iframe:
-> `<iframe src="https://SEU-SITE.netlify.app" style="width:100%;height:1600px;border:0;"></iframe>`
+Embed (Wix/Hotmart):
+<iframe src="https://SEU-SITE.netlify.app" style="width:100%;height:1600px;border:0;"></iframe>
