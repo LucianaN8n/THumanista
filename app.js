@@ -7,6 +7,187 @@
 
   const TECHS = { CFT:"Terapia Focada na Compaixão (CFT)", DBT:"Terapia Comportamental Dialética (DBT)", GESTALT:"Terapia Gestalt", EXPOSICAO:"Terapia de exposição gradual" };
 
+  // Plano B por técnica
+  const PLANO_B = {
+    GESTALT: [
+      "Voltar ao corpo: pés no chão, respiração 4-4-6 por 1 min.",
+      "Oferecer escolha: falar SOBRE, ENSAIAR, ou PAUSAR 3 min.",
+      "Usar linguagem de escolha: trocar 'tenho que' por 'eu escolho'."
+    ],
+    DBT: [
+      "Reduzir tarefa a micro-passos (1 minuto de habilidade).",
+      "Escala 0–10 antes/depois, valide e redirecione para TIP/ACCEPTS.",
+      "Se a discussão esquentar: pause, volte a mindfulness 2 min."
+    ],
+    CFT: [
+      "Mudar para sensação neutra (mãos/temperatura).",
+      "Frase nutritiva curta: 'é difícil e vou comigo passo a passo'.",
+      "Diminuir tempo do exercício e reforçar segurança."
+    ],
+    EXPOSICAO: [
+      "Voltar um nível da hierarquia e repetir até SUDS cair 30–40%.",
+      "Dividir a cena em partes menores; impedir reasseguramento.",
+      "TIP (frio/respiração) apenas para manter-se na janela, sem ritual."
+    ]
+  };
+
+  // Passos detalhados por seção e técnica (com duração 50/30)
+  const STEPS = {
+    GESTALT: {
+      Abertura: [
+        {t:"Alinhar foco no aqui-e-agora", m50:3, m30:2, s:"Pergunte: 'Se tivesse que resumir o que te trouxe em 1 frase, qual seria?' Combine pausas e sinal de sobrecarga."},
+        {t:"Ciclo de contato vivo", m50:8, m30:5, s:"Explique as fases; peça 1 sensação corporal + 1 necessidade agora."}
+      ],
+      Miolo: [
+        {t:"Cadeira vazia (crítico × vulnerável)", m50:12, m30:8, s:"Guie o diálogo: 'Crítico, o que você tenta proteger?' Trocar de cadeira e responder."},
+        {t:"Aterramento 4-4-6", m50:5, m30:3, s:"Inspira 4, segura 4, solta 6; 6 ciclos; scan corporal breve."}
+      ],
+      Fechamento: [
+        {t:"Transformar 'dever' em escolha", m50:10, m30:7, s:"'Troque 'tenho que' por 'eu escolho...' e complete'."},
+        {t:"Tarefa + indicadores", m50:3, m30:2, s:"Diário de awareness 3×/dia (corpo, necessidade, micro-ação). Indicadores: ↑ linguagem de escolha, ↓ tensão."}
+      ]
+    },
+    DBT: {
+      Abertura: [
+        {t:"Vínculo + metas", m50:5, m30:4, s:"Defina 1–2 metas. Mindfulness 3’ (respiração 5 sentidos)."},
+        {t:"Função das emoções", m50:7, m30:6, s:"Mapeie vulnerabilidades (sono, alimentação, estresse). Escolha 2 alvos."}
+      ],
+      Miolo: [
+        {t:"Tolerância à aflição: TIP + ACCEPTS", m50:15, m30:10, s:"TIP: frio na face + respiração; ACCEPTS: escolha 2 (atividades, contribuir, etc.)."},
+        {t:"Ensaio no gatilho real", m50:10, m30:7, s:"Roteirize quando/onde/como usará as habilidades."}
+      ],
+      Fechamento: [
+        {t:"Plano diário de habilidades", m50:10, m30:5, s:"2 práticas/dia (1 TIP + 1 ACCEPTS). Registro rápido."},
+        {t:"Síntese", m50:3, m30:2, s:"Checar confiança 0–10 e próximos passos."}
+      ]
+    },
+    CFT: {
+      Abertura: [
+        {t:"3 sistemas + respiração 4-4-6", m50:10, m30:8, s:"Ameaça–impulso–cuidado; respiração 4-4-6."},
+        {t:"Corpo base", m50:3, m30:2, s:"Postura, olhar, voz ancorados."}
+      ],
+      Miolo: [
+        {t:"Tom compassivo", m50:15, m30:10, s:"Definir voz/postura/olhar/gesto; ensaiar frases compassivas."},
+        {t:"Diálogo Crítico × Compassivo", m50:15, m30:10, s:"Use cartões/crenças; responda com compaixão orientada a valor."}
+      ],
+      Fechamento: [
+        {t:"Reparentalização breve", m50:10, m30:7, s:"Mão no peito + frase nutritiva ao 'eu criança'."},
+        {t:"Ritual 2×/dia", m50:3, m30:2, s:"Respiração + frase; planejar 2 contextos diários."}
+      ]
+    },
+    EXPOSICAO: {
+      Abertura: [
+        {t:"Revisar SUDS + segurança", m50:5, m30:4, s:"Janela de tolerância; sem reasseguramento."},
+        {t:"Escolher alvo do dia", m50:3, m30:2, s:"SUDS 30–40 para começar."}
+      ],
+      Miolo: [
+        {t:"Exposição contínua", m50:25, m30:15, s:"Permanecer na cena; medir SUDS a cada 3–5 min; impedir rituais."},
+        {t:"Processar evidências", m50:10, m30:7, s:"Previsão vs. realidade; o que aprendeu sobre si/risco."}
+      ],
+      Fechamento: [
+        {t:"Plano de repetição", m50:7, m30:5, s:"Repetir diariamente; avançar 1 nível se SUDS cair ≥40% do pico."},
+        {t:"Próximo nível", m50:3, m30:2, s:"Registrar tarefa e marcar agenda."}
+      ]
+    }
+  };
+
+  // Timers por passo
+  const timers = new Map();
+  function fmtMMSS(sec){ const m=String(Math.floor(sec/60)).padStart(2,'0'); const s=String(sec%60).padStart(2,'0'); return `${m}:${s}`; }
+  function startTimer(id, seconds, el){
+    stopTimer(id);
+    const obj = {remain:seconds, el, int:setInterval(()=>{
+      obj.remain--; 
+      el.querySelector(".time").textContent = fmtMMSS(Math.max(obj.remain,0));
+      el.classList.add("running");
+      if(obj.remain<=0){ stopTimer(id); toast("⏱️ Tempo do passo concluído."); }
+    },1000)};
+    timers.set(id, obj);
+  }
+  function stopTimer(id){
+    const t = timers.get(id);
+    if(t){ clearInterval(t.int); t.el.classList.remove("running"); timers.delete(id); }
+  }
+
+  function toast(msg){
+    let el = document.querySelector(".toast"); 
+    if(!el){ el = document.createElement("div"); el.className="toast"; document.body.appendChild(el); }
+    el.textContent = msg; el.style.display="block";
+    setTimeout(()=>{ el.style.display="none"; }, 2600);
+  }
+
+  // UI helpers
+  function durSelect(key, value){
+    return `<select class="dur" data-tech="${key}"><option value="30"${value==="30"?" selected":""}>30 min</option><option value="50"${value==="50"?" selected":""}>50 min</option></select>`;
+  }
+  function planoBbtn(key){ return `<button class="btn ghost sm plano" data-tech="${key}" title="Se travar">Plano B</button>`; }
+  function stepDetails(tech, sec, stepIndex, duration){
+    const spec = STEPS[tech][sec][stepIndex];
+    const mins = (duration==="30"? spec.m30 : spec.m50);
+    const id = `t-${tech}-${sec}-${stepIndex}`;
+    return `
+    <details class="step" data-id="${id}">
+      <summary>
+        <div class="step-head">
+          <span class="badge">${sec}</span>
+          <span>${spec.t}</span>
+          <span class="timer"><span class="time">${fmtMMSS(mins*60)}</span><span class="dot"></span></span>
+        </div>
+      </summary>
+      <div class="step-actions">
+        <button class="btn sm start" data-id="${id}" data-secs="${mins*60}">▶️ Iniciar</button>
+        <button class="btn outline sm pause" data-id="${id}">⏸️ Pausar</button>
+        <button class="btn ghost sm reset" data-id="${id}" data-secs="${mins*60}">↺ Reset</button>
+      </div>
+      <p>${spec.s}</p>
+      <label><input type="checkbox" class="chk" data-tech="${tech}" data-sec="${sec}" value="${stepIndex}"> Marcar como concluído</label>
+    </details>`;
+  }
+
+  // Scripts por técnica + accordions
+  function scriptByDuration(key, dur){
+    // usa o somatório de textos dos passos para exibir no <pre> (resumo corrido)
+    const secs = ["Abertura","Miolo","Fechamento"];
+    const lines = [];
+    secs.forEach(sec=>{
+      (STEPS[key][sec]||[]).forEach(sp=>{
+        const m = dur==="30"? sp.m30 : sp.m50;
+        lines.push(`- (${sec} ${m}′) ${sp.t}`);
+      });
+    });
+    return lines.join("\\n");
+  }
+
+  // Checklists por técnica (derivados dos passos)
+  function checksFor(key){
+    const out = {Abertura:[], Miolo:[], Fechamento:[]};
+    ["Abertura","Miolo","Fechamento"].forEach(sec=>{
+      out[sec] = (STEPS[key][sec]||[]).map(sp=>sp.t);
+    });
+    return out;
+  }
+
+  // Render de um bloco com seletor + script + accordions por passo + checklist colapsável
+  function renderBlock(key, duration){
+    const name = TECHS[key];
+    const checks = checksFor(key);
+    const section = (sec)=> (STEPS[key][sec]||[]).map((_,i)=> stepDetails(key, sec, i, duration)).join("");
+    return `
+    <div class="block" id="blk-${key}">
+      <div class="controls">
+        <span class="sel">Duração: ${durSelect(key, duration)}</span>
+        ${planoBbtn(key)}
+      </div>
+      <h5>${name}</h5>
+      <pre>${scriptByDuration(key, duration)}</pre>
+      <div class="checks">
+        <fieldset><legend>Abertura</legend>${section("Abertura")}</fieldset>
+        <fieldset><legend>Miolo</legend>${section("Miolo")}</fieldset>
+        <fieldset><legend>Fechamento</legend>${section("Fechamento")}</fieldset>
+      </div>
+    </div>`;
+  }
+
   function getSelections(){
     const sintomas = $$(".sym:checked").map(c=>c.value);
     const padroes = $$(".pat:checked").map(c=>c.value);
@@ -27,157 +208,12 @@
   }
   const top3 = sc => Object.entries(sc).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k])=>k);
 
-  // Roteiros cronometrados por técnica e duração
-  function scriptByDuration(key, dur){
-    const short = dur==="30";
-    const t = (full, shrunk) => short ? shrunk : full;
-    if(key==="GESTALT"){
-      return [
-        "Objetivo: awareness no aqui e agora; contato e responsabilidade.",
-        t("Sessão 1 - 50 min","Sessão 1 - 30 min"),
-        t("- 05 min: contrato e foco.","- 03 min: contrato e foco."),
-        t("- 08 min: psicoeducação do ciclo de contato.","- 05 min: psicoeducação breve do ciclo."),
-        t("- 12 min: cadeira vazia (crítico x vulnerável); condução guiada.","- 08 min: cadeira vazia breve (1 ciclo)."),
-        t("- 05 min: aterramento 4-4-6.","- 03 min: aterramento 4-4-6."),
-        t("- 10 min: integrar aprendizagens; 'eu escolho...'","- 07 min: integrar e compromisso."),
-        "- 02–03 min: tarefa e indicadores.",
-        "Tarefa: diário de awareness 3x/dia (corpo - necessidade - micro-ação).",
-        "",
-        t("Sessão 2 - 50 min","Sessão 2 - 30 min"),
-        t("- 10 min: polaridades (controlar x ceder).","- 06 min: polaridades rápida."),
-        t("- 10 min: eu-mensagens.","- 06 min: eu-mensagens prática."),
-        t("- 10 min: ensaio situacional + feedback somático.","- 08 min: ensaio situacional."),
-        t("- 10 min: plano de prática real.","- 07 min: plano real."),
-        "- 02–03 min: revisão.",
-        "",
-        t("Sessão 3 - 50 min","Sessão 3 - 30 min"),
-        t("- 15 min: ajustes criativos.","- 08 min: ajustes criativos."),
-        t("- 10 min: experimento 'como seria se... agora'.","- 07 min: experimento imediato."),
-        t("- 10 min: contrato de continuidade.","- 07 min: continuidade + ritual 2x/dia.")
-      ].join("\n");
-    }
-    if(key==="DBT"){
-      return [
-        "Objetivo: regular emoção, tolerância à aflição e efetividade interpessoal.",
-        t("Sessão 1 - 50 min","Sessão 1 - 30 min"),
-        t("- 10 min: função das emoções + vulnerabilidades.","- 06 min: função das emoções."),
-        t("- 15 min: TIP + ACCEPTS (escolher 2).","- 10 min: TIP + 1 ACCEPTS."),
-        t("- 10 min: roteirizar gatilhos reais.","- 07 min: ensaio em 1 gatilho."),
-        t("- 10 min: plano diário de habilidades.","- 05 min: plano mínimo diário."),
-        "- 02–03 min: síntese.",
-        "",
-        t("Sessão 2 - 50 min","Sessão 2 - 30 min"),
-        t("- 15 min: opostos à emoção + atividades com valor.","- 08 min: opostos à emoção."),
-        t("- 20 min: DEAR MAN com role-play difícil.","- 12 min: DEAR MAN em 1 cena."),
-        t("- 10 min: generalização.","- 07 min: generalização mínima."),
-        "",
-        t("Sessão 3 - 50 min","Sessão 3 - 30 min"),
-        t("- 15 min: Plano de Crise (foco, habilidades, contatos).","- 10 min: Plano de Crise enxuto."),
-        t("- 15 min: kit de emergência.","- 10 min: kit essencial."),
-        t("- 10 min: revisão e metas.","- 07 min: revisão e metas.")
-      ].join("\n");
-    }
-    if(key==="CFT"){
-      return [
-        "Objetivo: reduzir autocrítica/vergonha; cultivar sistema de cuidado.",
-        t("Sessão 1 - 50 min","Sessão 1 - 30 min"),
-        t("- 10 min: 3 sistemas + respiração 4-4-6.","- 08 min: 3 sistemas + 4-4-6."),
-        t("- 15 min: tom compassivo (voz, postura, gesto).","- 10 min: tom compassivo essencial."),
-        t("- 10 min: mapear crítica protetiva.","- 07 min: mapear 1 crítica."),
-        "- 02–03 min: tarefa 2x/dia (respiração + frase).",
-        "",
-        t("Sessão 2 - 50 min","Sessão 2 - 30 min"),
-        t("- 15 min: construir self compassivo.","- 10 min: self compassivo rápido."),
-        t("- 15 min: diálogo crítico x self compassivo.","- 10 min: diálogo 1 ciclo."),
-        t("- 10 min: reparentalização breve.","- 07 min: reparentalização breve."),
-        "",
-        t("Sessão 3 - 50 min","Sessão 3 - 30 min"),
-        t("- 15 min: compaixão ao eu do passado.","- 10 min: carta curta ao eu do passado."),
-        t("- 15 min: compaixão ao outro difícil (com limites).","- 10 min: fala compassiva com limites."),
-        t("- 10 min: manutenção 4 semanas.","- 07 min: manutenção 2–4 semanas.")
-      ].join("\n");
-    }
-    if(key==="EXPOSICAO"){
-      return [
-        "Objetivo: reduzir evitação e medo condicionado com exposição gradual.",
-        t("Sessão 1 - 50 min (planejamento)","Sessão 1 - 30 min (planejamento)"),
-        t("- 08 min: psicoeducação (habituação x sensibilização).","- 05 min: psicoeducação rápida."),
-        t("- 12 min: hierarquia 0–100 (10–12 itens).","- 08 min: hierarquia 0–100 (6–8 itens)."),
-        t("- 12 min: treino interoceptivo + SUDS.","- 07 min: interoceptivo + SUDS."),
-        t("- 08 min: escolher 2 alvos iniciais.","- 05 min: escolher 1–2 alvos."),
-        "- 02–03 min: regras de segurança.",
-        "",
-        t("Sessão 2 - 50 min (1ª execução)","Sessão 2 - 30 min (1ª execução)"),
-        t("- 30 min: conduzir exposição situacional (alvo 1).","- 18 min: conduzir exposição curta."),
-        t("- 10 min: processar aprendizado.","- 07 min: processar aprendizado."),
-        t("- 05 min: plano diário.","- 05 min: plano diário."),
-        "",
-        t("Sessão 3 - 50 min (progressão)","Sessão 3 - 30 min (progressão)"),
-        t("- 30 min: avançar 1–2 níveis.","- 18 min: avançar 1 nível."),
-        t("- 10 min: significado e autoeficácia.","- 07 min: significado."),
-        t("- 05 min: manutenção 4 semanas.","- 05 min: manutenção 2–4 semanas.")
-      ].join("\n");
-    }
-    return "";
-  }
-
-  // Checklists por técnica
-  const CHECKS = {
-    GESTALT: {
-      abre: ["Alinhar foco no aqui-e-agora", "Mapa rápido do ciclo de contato", "Acordos de segurança/pausa"],
-      miolo: ["Experimento (cadeira vazia/polaridades)", "Eu-mensagens / ensaio situacional", "Feedback somático (corpo)"],
-      fecha: ["Síntese do que funcionou", "Tarefa definida e mensurável", "Indicadores para próxima sessão"]
-    },
-    DBT: {
-      abre: ["Definir metas e validar emoção", "Mindfulness curto (3′)", "Revisar vulnerabilidades"],
-      miolo: ["Ensinar TIP/ACCEPTS", "Treinar DEAR MAN", "Plano de crise rascunhado"],
-      fecha: ["Compromisso com 2 habilidades/dia", "Registro rápido (cartela)", "Generalização (quando/onde)"]
-    },
-    CFT: {
-      abre: ["Apresentar 3 sistemas", "Respiração calmante 4-4-6", "Tom compassivo definido"],
-      miolo: ["Diálogo crítico × self compassivo", "Reparentalização breve", "Prática situacional compassiva"],
-      fecha: ["Ritual 2×/dia definido", "Carta/Frase nutritiva combinada", "Indicadores: menos vergonha/mais ação"]
-    },
-    EXPOSICAO: {
-      abre: ["Revisar SUDS e segurança", "Escolha do alvo do dia", "Combinar não reassegurar"],
-      miolo: ["Exposição contínua dentro da janela", "Medir SUDS a cada 3–5 min", "Impedir rituais"],
-      fecha: ["Processar evidências vs. previsão", "Plano de repetição diária", "Próximo nível da hierarquia"]
-    }
-  };
-
-  // Render de um bloco com seletor + script + checklist
-  function renderBlock(key, duration){
-    const name = TECHS[key];
-    const options = `<select class="dur" data-tech="${key}"><option value="30"${duration==="30"?" selected":""}>30 min</option><option value="50"${duration==="50"?" selected":""}>50 min</option></select>`;
-    const checks = CHECKS[key];
-    const mkChecks = (section, items)=>{
-      return `<fieldset><legend>${section}</legend>${
-        items.map((txt,i)=>`<label><input type="checkbox" class="chk" data-tech="${key}" data-sec="${section}" value="${i}"> ${txt}</label>`).join("")
-      }</fieldset>`;
-    };
-    return `
-    <div class="block" id="blk-${key}">
-      <div class="controls">
-        <span class="sel">Duração: ${options}</span>
-      </div>
-      <h5>${name}</h5>
-      <pre>${scriptByDuration(key, duration)}</pre>
-      <div class="checks">
-        ${mkChecks("Abertura", checks.abre)}
-        ${mkChecks("Miolo", checks.miolo)}
-        ${mkChecks("Fechamento", checks.fecha)}
-      </div>
-    </div>`;
-  }
-
   function buildParecer(){
     const nome = ($("#nome").value||"").trim();
     const idade = ($("#idade").value||"").trim();
     const queixa = ($("#queixa").value||"").trim();
     const objetivo = ($("#objetivo").value||"").trim();
     const sev = Number($("#severidade").value||6);
-    const riscos = ($("#riscos").value||"").trim();
-    const obs = ($("#obs").value||"").trim();
 
     const sel = getSelections();
     let ranking = top3(scoreTechs(sel));
@@ -185,50 +221,70 @@
     ranking = ranking.sort((a,b)=> pref.indexOf(a)-pref.indexOf(b));
     const t3 = ranking.length? ranking : ["GESTALT","DBT","CFT"];
 
-    // estado de duração por técnica (default 50)
     const durations = Object.fromEntries(t3.map(k=>[k,"50"]));
 
-    // Monta HTML do parecer
-    const tag = t => `<span class="tag">${t}</span>`;
-    const tagify = arr => arr.length ? arr.map(tag).join(" ") : "—";
-
-    // header
     $("#parecer").innerHTML = [
       `<h4>Dados do caso</h4>`,
       `<div><strong>Paciente:</strong> ${nome||"—"} • <strong>Idade:</strong> ${idade||"—"} • <strong>Sev.:</strong> ${sev}/10</div>`,
-      `<div><strong>Queixa:</strong> ${queixa||"—"}</div>`,
-      `<div><strong>Objetivo:</strong> ${objetivo||"—"}</div>`,
-      `<div><strong>Sintomas/temas:</strong> ${tagify($$(".sym:checked").map(c=>c.value))}</div>`,
-      `<div><strong>Padrões:</strong> ${tagify($$(".pat:checked").map(c=>c.value))}</div>`,
+      `<div><strong>Queixa:</strong> ${queixa||"—"} • <strong>Objetivo:</strong> ${objetivo||"—"}</div>`,
       `<div class="sep"></div>`,
       `<h4>Técnicas selecionadas (máx. 3)</h4>`,
-      `<div>${t3.map(k=>tag(TECHS[k])).join(" ")}</div>`,
+      `<div>${t3.map(k=>`<span class="tag">${TECHS[k]}</span>`).join(" ")}</div>`,
       `<div class="sep"></div>`,
-      `<h4>Roteiro detalhado (Sessões 1–3)</h4>`,
+      `<h4>Roteiro detalhado (guiado)</h4>`,
       t3.map(k=>renderBlock(k, durations[k])).join("")
     ].join("");
 
-    // listeners das dropdowns para trocar duração on-the-fly
+    // Handlers: duração + timers + plano B
     $$(".dur").forEach(sel=>{
       sel.addEventListener("change", (e)=>{
         const key = e.target.dataset.tech;
         const dur = e.target.value;
         const pre = document.querySelector(`#blk-${key} pre`);
         pre.textContent = scriptByDuration(key, dur);
+        // reset timers desse bloco
+        $(`#blk-${key}`).querySelectorAll(".step").forEach(d=>{
+          const id = d.dataset.id;
+          const secs = findStepSecsFromId(id, dur);
+          const tEl = d.querySelector(".timer");
+          stopTimer(id);
+          tEl.querySelector(".time").textContent = fmtMMSS(secs);
+        });
       });
     });
 
-    // Retorno para o PDF
+    // Timer controls
+    $$(".start").forEach(btn=> btn.addEventListener("click", e=>{
+      const id = e.target.dataset.id;
+      const secs = parseInt(e.target.dataset.secs,10)||0;
+      const el = e.target.closest(".step").querySelector(".timer");
+      startTimer(id, secs, el);
+    }));
+    $$(".pause").forEach(btn=> btn.addEventListener("click", e=> stopTimer(e.target.dataset.id)));
+    $$(".reset").forEach(btn=> btn.addEventListener("click", e=>{
+      const id = e.target.dataset.id;
+      const secs = parseInt(e.target.dataset.secs,10)||0;
+      const el = e.target.closest(".step").querySelector(".timer");
+      stopTimer(id);
+      el.querySelector(".time").textContent = fmtMMSS(secs);
+    }));
+
+    // Plano B
+    $$(".plano").forEach(b=> b.addEventListener("click", e=>{
+      const key = e.target.dataset.tech;
+      toast("Plano B: " + (PLANO_B[key]||[]).join(" • "));
+    }));
+
+    // Para PDF: leitores
     function readChecklist(){
       const out = {};
-      t3.forEach(k=>{
-        out[k] = {Abertura:[], Miolo:[], Fechamento:[]};
-      });
+      t3.forEach(k=>{ out[k] = {Abertura:[], Miolo:[], Fechamento:[]}; });
       $$(".chk").forEach(c=>{
-        const k = c.dataset.tech, sec = c.dataset.sec;
-        if (c.checked){
-          const label = c.parentElement.textContent.trim();
-          out[k][sec].push(label);
+        if(c.checked){
+          const tech = c.dataset.tech, sec = c.dataset.sec;
+          const label = c.parentElement.previousElementSibling ? 
+            c.parentElement.previousElementSibling.textContent.trim() : "Passo concluído";
+          out[tech][sec].push(label);
         }
       });
       return out;
@@ -239,11 +295,16 @@
       return out;
     }
 
-    return {
-      t3, nome, idade, queixa, objetivo, sev,
-      durationsReader: readDurations,
-      checklistReader: readChecklist
-    };
+    return {t3, nome, idade, queixa, objetivo, sev, durationsReader:readDurations, checklistReader:readChecklist};
+  }
+
+  function findStepSecsFromId(id, dur){
+    // id: t-TECH-SEC-INDEX
+    try{
+      const [,tech,sec,idx] = id.split("-");
+      const spec = STEPS[tech][sec][parseInt(idx,10)];
+      return (dur==="30"? spec.m30 : spec.m50)*60;
+    }catch(e){ return 60; }
   }
 
   function gerarTextoPDF(ctx){
@@ -258,25 +319,26 @@
       `Queixa: ${queixa||"—"}`,
       `Objetivo: ${objetivo||"—"}`,
       ""
-    ].join("\n");
+    ].join("\\n");
     const body = t3.map(k=>{
       const titulo = `${TECHS[k]} — ${durs[k]} min`;
-      const script = scriptByDuration(k, durs[k]);
+      // resumo dos passos
+      const resumo = scriptByDuration(k, durs[k]);
       const ck = checks[k]||{Abertura:[], Miolo:[], Fechamento:[]};
       const ckTxt = ["Abertura","Miolo","Fechamento"].map(sec=>{
         const arr = ck[sec]||[];
         if(!arr.length) return `${sec}: [ ]`;
         return `${sec}: ` + arr.map(t=>`[x] ${t}`).join("; ");
-      }).join("\n");
-      return `${titulo}\n${script}\n\nChecklist\n${ckTxt}`;
-    }).join("\n\n");
+      }).join("\\n");
+      return `${titulo}\\n${resumo}\\n\\nChecklist\\n${ckTxt}`;
+    }).join("\\n\\n");
     return header + body;
   }
 
   function baixarPDF(){
     const { jsPDF } = window.jspdf || {};
     if (!jsPDF){ alert("PDF off-line: coloque /vendor/jspdf.umd.min.js (ou permita a CDN)."); return; }
-    const ctx = buildParecer(); // garante leitura atualizada de durations/checks
+    const ctx = buildParecer(); // garante leitura de durations/checklist
     const texto = gerarTextoPDF(ctx);
     const doc = new jsPDF({unit:"pt", format:"a4"});
     const margin = 48, maxWidth = 515;
@@ -284,7 +346,7 @@
     doc.text("THSE – Mentor Humanista (Gestalt • DBT • CFT)", margin, 54);
     doc.setFont("Helvetica","Normal"); doc.setFontSize(11.5);
     let y = 76;
-    texto.split("\n").forEach(p => {
+    texto.split("\\n").forEach(p => {
       const lines = doc.splitTextToSize(p, maxWidth);
       for(const line of lines){
         if (y>800){ doc.addPage(); doc.setFont("Helvetica","Normal"); doc.setFontSize(11.5); y=60; }
@@ -298,7 +360,7 @@
 
   // Eventos
   document.getElementById("gerar").addEventListener("click", ()=>{
-    const ctx = buildParecer();
+    buildParecer();
     const fab = document.getElementById("fab-pdf");
     if (fab) fab.style.display = "flex";
     document.getElementById("card-parecer").scrollIntoView({behavior:"smooth", block:"start"});
