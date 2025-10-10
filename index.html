@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>THSE – Mentor Humanista (Gestalt + Comportamental)</title>
+  <meta name="description" content="App de apoio ao terapeuta: analisa anamnese e sugere até 3 técnicas (Gestalt, DBT, CFT, FAP, etc.) com protocolo detalhado e PDF.">
+  <link rel="stylesheet" href="styles.css" />
+  <!-- jsPDF via CDN (UMD, sem eval). Fallback gracioso se offline. -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" crossorigin="anonymous" defer></script>
+</head>
+<body>
+  <header class="container">
+    <h1>🌿 THSE – Mentor Humanista</h1>
+    <p class="sub">Gestalt Terapia + Análise Comportamental • suporte prático para atendimentos seguros e eficazes</p>
+  </header>
+
+  <main class="container grid">
+    <!-- Lado esquerdo: formulário -->
+    <section class="card">
+      <h2>1) Dados do paciente</h2>
+      <div class="row">
+        <label>Nome do paciente
+          <input type="text" id="nome" placeholder="Ex.: Maria A." />
+        </label>
+        <label>Idade
+          <input type="number" id="idade" min="0" max="120" placeholder="Ex.: 34" />
+        </label>
+      </div>
+      <div class="row">
+        <label>Queixa principal
+          <textarea id="queixa" rows="3" placeholder="Descreva em 2–3 frases o que motivou a busca por terapia."></textarea>
+        </label>
+      </div>
+      <div class="row">
+        <label>Objetivo terapêutico (do paciente)
+          <textarea id="objetivo" rows="2" placeholder="O que deseja mudar nos próximos 30–90 dias?"></textarea>
+        </label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>2) Anamnese breve</h2>
+      <div class="qgroup">
+        <h3>Sintomas / temas (marque os que se aplicam):</h3>
+        <div class="pillbox">
+          <label><input type="checkbox" value="ansiedade" class="sym"> Ansiedade / pânico</label>
+          <label><input type="checkbox" value="depressao" class="sym"> Depressão / apatia</label>
+          <label><input type="checkbox" value="trauma" class="sym"> Trauma / TEPT</label>
+          <label><input type="checkbox" value="luto" class="sym"> Lutos e perdas</label>
+          <label><input type="checkbox" value="casal" class="sym"> Casal / conflitos relacionais</label>
+          <label><input type="checkbox" value="parentalidade" class="sym"> Educação parental</label>
+          <label><input type="checkbox" value="toxico" class="sym"> Relacionamentos tóxicos</label>
+          <label><input type="checkbox" value="substancias" class="sym"> Uso de substâncias</label>
+          <label><input type="checkbox" value="burnout" class="sym"> Burnout / estresse crônico</label>
+          <label><input type="checkbox" value="posparto" class="sym"> Depressão pós-parto</label>
+          <label><input type="checkbox" value="memoria" class="sym"> Queixas de memória</label>
+          <label><input type="checkbox" value="desenvolvimento" class="sym"> Transtornos do desenvolvimento</label>
+          <label><input type="checkbox" value="psicossomatico" class="sym"> Doenças físicas / psicossomática</label>
+        </div>
+      </div>
+
+      <div class="qgroup">
+        <h3>Severidade percebida (0–10)</h3>
+        <input type="range" id="severidade" min="0" max="10" step="1" value="6" oninput="sevVal.textContent=this.value">
+        <div>Valor: <strong id="sevVal">6</strong></div>
+      </div>
+
+      <div class="qgroup">
+        <h3>Padrões observáveis (assinale os que ocorreram nas últimas 2–4 semanas):</h3>
+        <div class="pillbox">
+          <label><input type="checkbox" value="evitacao" class="pat"> Evitação de situações/emoções</label>
+          <label><input type="checkbox" value="autocritica" class="pat"> Autocrítica intensa / vergonha</label>
+          <label><input type="checkbox" value="impulsividade" class="pat"> Impulsividade / explosões</label>
+          <label><input type="checkbox" value="ruminacao" class="pat"> Ruminação / preocupação constante</label>
+          <label><input type="checkbox" value="conflito_relacional" class="pat"> Brigas recorrentes / rompimentos</label>
+          <label><input type="checkbox" value="hipervigilancia" class="pat"> Hipervigilância / sobressaltos</label>
+          <label><input type="checkbox" value="apatia" class="pat"> Afastamento social / apatia</label>
+          <label><input type="checkbox" value="procrastinacao" class="pat"> Procrastinação persistente</label>
+        </div>
+      </div>
+
+      <div class="qgroup">
+        <h3>Preferências do paciente</h3>
+        <div class="pillbox">
+          <label><input type="checkbox" value="diretivo" class="pref"> Prefere intervenções mais diretivas</label>
+          <label><input type="checkbox" value="experiencial" class="pref"> Gosta de exercícios vivenciais</label>
+          <label><input type="checkbox" value="espiritual" class="pref"> Integração espiritual (ex.: Desenho Humano)</label>
+          <label><input type="checkbox" value="ritmo_suave" class="pref"> Pede ritmo mais suave / acolhedor</label>
+        </div>
+      </div>
+
+      <div class="row">
+        <label>Riscos/atenção
+          <textarea id="riscos" rows="2" placeholder="Ex.: ideação suicida, violência doméstica, uso abusivo, etc."></textarea>
+        </label>
+      </div>
+
+      <div class="row">
+        <label>Observações do terapeuta
+          <textarea id="obs" rows="2" placeholder="Hipóteses iniciais, fatores contextuais, preferências de setting…"></textarea>
+        </label>
+      </div>
+
+      <div class="actions">
+        <button id="gerar" class="btn">🧭 Gerar protocolo</button>
+        <button id="pdf" class="btn outline">⬇️ Baixar PDF</button>
+        <button id="limpar" class="btn ghost">🧹 Limpar</button>
+      </div>
+    </section>
+
+    <!-- Lado direito: parecer -->
+    <section class="card">
+      <h2>3) Parecer do Especialista</h2>
+      <div id="parecer" class="parecer">
+        <p>Preencha a anamnese e clique em <strong>Gerar protocolo</strong>. O sistema selecionará até <strong>3 técnicas</strong> e entregará um roteiro detalhado (Sessão 1–3), tarefas, indicadores e cuidados.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="container center muted">
+    <p>THSE – Mentor Humanista • Instituto Saber Consciente • <span id="today"></span></p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
