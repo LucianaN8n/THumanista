@@ -1,5 +1,7 @@
+# Netlify config — embed Hotmart liberado
 [build]
   publish = "."
+
 [[headers]]
   for = "/*"
   [headers.values]

@@ -1,289 +1,134 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Mentor Humanista — Protocolo a partir da Anamnese</title>
-  <meta name="description" content="App Mentor Humanista — gere Parecer + Plano de 30 dias a partir de uma anamnese guiada.">
-
-  <style>
-    :root{
-      --ink:#0e2b2f; --mut:#456a6f; --bg:#f6fbfb; --line:#e4eeee; --pri:#0e2b2f;
-      --radius:16px;
-    }
-    *{box-sizing:border-box}
-    html,body{margin:0;padding:0}
-    body{font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;color:var(--ink);background:#fff}
-    .wrap{max-width:960px;margin:0 auto;padding:20px}
-    .h1{font-size:clamp(24px,3.6vw,36px);font-weight:900;margin:6px 0 4px}
-    .mut{color:var(--mut)}
-    .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 10px 30px rgba(12,45,49,.06);padding:18px}
-    .grid{display:grid;gap:12px}
-    .grid2{display:grid;grid-template-columns:1fr;gap:12px}
-    @media(min-width:760px){ .grid2{grid-template-columns:1fr 1fr} }
-    label{font-size:14px;display:grid;gap:6px}
-    input[type="text"], input[type="number"], select, textarea{
-      padding:12px 12px;border:1px solid var(--line);border-radius:12px;font-size:15px;background:#fff
-    }
-    textarea{min-height:88px;resize:vertical}
-    .btn{appearance:none;border:1px solid var(--pri);color:#fff;background:var(--pri);padding:12px 16px;border-radius:12px;font-weight:800;cursor:pointer}
-    .btn.ghost{background:#fff;color:var(--pri)}
-    .section-title{font-weight:900;margin:4px 0 8px;font-size:18px}
-    ul{margin:8px 0 0 18px}
-    .pill{display:inline-block;border:1px solid var(--line);padding:6px 10px;border-radius:999px;background:#fff}
-    .toolbar{display:flex;gap:10px;flex-wrap:wrap}
-    li[contenteditable]{outline:0;padding:2px 4px;border-radius:6px}
-    li[contenteditable]:focus{background:var(--bg)}
-    .footer{padding:14px 0 28px}
-  </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>THSE – Mentor Humanista (Gestalt + Comportamental)</title>
+  <meta name="description" content="Anamnese rápida + seleção de técnicas (máx. 3) com roteiro detalhado e PDF.">
+  <link rel="stylesheet" href="styles.css" />
+  <script src="vendor/jspdf.umd.min.js" defer></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      setTimeout(function(){
+        if(!(window.jspdf && window.jspdf.jsPDF)){
+          var s=document.createElement('script');
+          s.src='https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js';
+          s.defer=true; document.head.appendChild(s);
+        }
+      }, 200);
+    });
+  </script>
 </head>
 <body>
-  <header class="wrap">
-    <div class="h1">App Mentor Humanista</div>
-    <div class="mut">Protocolo nasce da <b>anamnese</b>. Nada de listas fixas.</div>
+  <header class="container pagebar">
+    <h1>🌿 THSE – Mentor Humanista</h1>
+    <div class="pagebar-actions">
+      <button id="pdfTop" class="btn outline sm">⬇️ Baixar PDF</button>
+    </div>
   </header>
 
-  <main class="wrap grid">
-    <section class="card">
-      <div class="section-title">Anamnese Humanista</div>
-      <div class="grid2">
-        <label>Nome do cliente
-          <input id="f-nome" type="text" placeholder="Ex.: Ana Lima">
+  <main class="container grid">
+    <section class="card compact" id="card-dados">
+      <h2>1) Dados do paciente</h2>
+      <div class="row tight">
+        <label>Nome do paciente
+          <input type="text" id="nome" placeholder="Ex.: Maria A." />
         </label>
+        <label>Idade
+          <input type="number" id="idade" min="0" max="120" placeholder="Ex.: 34" />
+        </label>
+      </div>
+      <div class="row tight">
         <label>Queixa principal
-          <input id="f-queixa" type="text" placeholder="Ex.: ansiedade leve">
+          <textarea id="queixa" rows="2" placeholder="Ex.: isolamento social, medo de rejeição…"></textarea>
         </label>
       </div>
-
-      <div class="grid2">
-        <label>Intensidade (0–10)
-          <input id="f-intensidade" type="number" min="0" max="10" value="6">
+      <div class="row tight last">
+        <label>Objetivo terapêutico (do paciente)
+          <textarea id="objetivo" rows="2" placeholder="Ex.: comunicar-se melhor, ampliar vínculos, reduzir crises…"></textarea>
         </label>
-        <label>Quando piora?
-          <input id="f-gatilho" type="text" placeholder="Ex.: à noite, antes de reuniões">
-        </label>
-      </div>
-
-      <div class="grid2">
-        <label>O que esse padrão “compra” pra você?
-          <select id="f-funcao">
-            <option value="alivio">Alívio rápido</option>
-            <option value="evitacao">Evitar conflito/situação</option>
-            <option value="aprovacao">Buscar aprovação</option>
-            <option value="controle">Controlar/rigidez</option>
-          </select>
-        </label>
-        <label>Objetivo do cliente (1 frase)
-          <input id="f-objetivo" type="text" placeholder="Ex.: falar em público com mais segurança">
-        </label>
-      </div>
-
-      <label>Preferências/limites (opcional)
-        <input id="f-preferencias" type="text" placeholder="Ex.: prefiro exercícios de respiração a imaginação">
-      </label>
-
-      <div class="toolbar" style="margin-top:10px">
-        <button id="btn-gerar" class="btn">Gerar Protocolo</button>
-        <span class="pill">Você poderá editar tudo antes do PDF</span>
       </div>
     </section>
 
-    <section id="editor" class="card" style="display:none">
-      <div class="section-title">Protocolo sugerido (edite livremente)</div>
-      <div id="plano-editor"></div>
-      <div class="toolbar" style="margin-top:10px">
-        <button id="btn-pdf" class="btn">Baixar PDF</button>
-        <button id="btn-refazer" class="btn ghost">Refazer a anamnese</button>
+    <section class="card compact" id="card-anamnese">
+      <h2>2) Anamnese breve</h2>
+      <div class="qgroup">
+        <h3>Sintomas / temas (marque os que se aplicam):</h3>
+        <div class="pillbox">
+          <label><input type="checkbox" value="ansiedade" class="sym"> Ansiedade / pânico</label>
+          <label><input type="checkbox" value="depressao" class="sym"> Depressão / apatia</label>
+          <label><input type="checkbox" value="trauma" class="sym"> Trauma / TEPT</label>
+          <label><input type="checkbox" value="luto" class="sym"> Lutos e perdas</label>
+          <label><input type="checkbox" value="casal" class="sym"> Casal / conflitos relacionais</label>
+          <label><input type="checkbox" value="parentalidade" class="sym"> Educação parental</label>
+          <label><input type="checkbox" value="toxico" class="sym"> Relacionamentos tóxicos</label>
+          <label><input type="checkbox" value="substancias" class="sym"> Uso de substâncias</label>
+          <label><input type="checkbox" value="burnout" class="sym"> Burnout / estresse crônico</label>
+          <label><input type="checkbox" value="posparto" class="sym"> Depressão pós-parto</label>
+          <label><input type="checkbox" value="memoria" class="sym"> Queixas de memória</label>
+          <label><input type="checkbox" value="desenvolvimento" class="sym"> Transtornos do desenvolvimento</label>
+          <label><input type="checkbox" value="psicossomatico" class="sym"> Doenças físicas / psicossomática</label>
+        </div>
+      </div>
+
+      <div class="qgroup smallgap">
+        <h3>Severidade percebida (0–10)</h3>
+        <input type="range" id="severidade" min="0" max="10" step="1" value="6" oninput="sevVal.textContent=this.value">
+        <div>Valor: <strong id="sevVal">6</strong></div>
+      </div>
+
+      <div class="qgroup">
+        <h3>Padrões observáveis (últimas 2–4 semanas):</h3>
+        <div class="pillbox">
+          <label><input type="checkbox" value="evitacao" class="pat"> Evitação de situações/emoções</label>
+          <label><input type="checkbox" value="autocritica" class="pat"> Autocrítica intensa / vergonha</label>
+          <label><input type="checkbox" value="impulsividade" class="pat"> Impulsividade / explosões</label>
+          <label><input type="checkbox" value="ruminacao" class="pat"> Ruminação / preocupação constante</label>
+          <label><input type="checkbox" value="conflito_relacional" class="pat"> Brigas recorrentes / rompimentos</label>
+          <label><input type="checkbox" value="hipervigilancia" class="pat"> Hipervigilância / sobressaltos</label>
+          <label><input type="checkbox" value="apatia" class="pat"> Afastamento social / apatia</label>
+          <label><input type="checkbox" value="procrastinacao" class="pat"> Procrastinação persistente</label>
+        </div>
+      </div>
+
+      <div class="row tight">
+        <label>Riscos/atenção
+          <textarea id="riscos" rows="2" placeholder="Ex.: ideação suicida, violência doméstica, uso abusivo, etc."></textarea>
+        </label>
+      </div>
+
+      <div class="row tight last">
+        <label>Observações do terapeuta
+          <textarea id="obs" rows="2" placeholder="Hipóteses iniciais, fatores contextuais, preferências de setting…"></textarea>
+        </label>
+      </div>
+
+      <div class="actions topgap">
+        <button id="gerar" class="btn">🧭 Gerar protocolo</button>
+        <button id="pdf" class="btn outline">⬇️ Baixar PDF</button>
+        <button id="limpar" class="btn ghost">🧹 Limpar</button>
       </div>
     </section>
+
+    <section class="card compact" id="card-parecer">
+      <div class="parecer-toolbar">
+        <strong>Protocolo</strong>
+        <span class="spacer"></span>
+        <button id="pdf2" class="btn outline sm">⬇️ Baixar PDF</button>
+      </div>
+      <h2>3) Parecer do Especialista</h2>
+      <div id="parecer" class="parecer">
+        <p>Preencha a anamnese e clique em <strong>Gerar protocolo</strong>. O sistema selecionará até <strong>3 técnicas</strong> e entregará um <strong>roteiro passo a passo</strong> (Sessão 1–3), com prompts, tarefas, indicadores e cuidados.</p>
+      </div>
+    </section>
+
+    <button id="fab-pdf" class="fab" title="Baixar PDF">⬇️</button>
   </main>
 
-  <footer class="wrap footer">
-    <small class="mut">© Mentor Humanista • Uso educacional. Você é o responsável técnico.</small>
+  <footer class="container center muted">
+    <p>THSE – Mentor Humanista • Instituto Saber Consciente • <span id="today"></span></p>
   </footer>
 
-  <script>
-    const $ = (s)=>document.querySelector(s);
-    const editorSec = $("#editor");
-    const planoEditor = $("#plano-editor");
-
-    const estado = {
-      cliente: { nome: "", queixa: "", objetivo: "" },
-      anamnese: {},
-      plano: []
-    };
-
-    $("#btn-gerar")?.addEventListener("click", () => {
-      const nome = $("#f-nome").value.trim();
-      const queixa = $("#f-queixa").value.trim();
-      const intensidade = +$("#f-intensidade").value || 0;
-      const gatilho = $("#f-gatilho").value.trim();
-      const funcao = $("#f-funcao").value;
-      const objetivo = $("#f-objetivo").value.trim();
-      const pref = $("#f-preferencias").value.trim();
-
-      estado.cliente = { nome, queixa, objetivo };
-      estado.anamnese = { intensidade, gatilho, funcao, pref };
-
-      const score = { crise:0, regulacao:0, compaixao:0, experimento:0, habilidades:0, exposicao:0 };
-
-      if (intensidade >= 7) score.crise += 2;
-      if (/noite|madrugada|sono/i.test(gatilho)) score.regulacao += 1;
-      if (funcao === "alivio") score.regulacao += 1;
-      if (funcao === "evitacao") score.exposicao += 2;
-      if (funcao === "aprovacao") score.habilidades += 2;
-      if (funcao === "controle") score.compaixao += 1;
-      if (/falar|relacion|pedido|limite|conversa/i.test(objetivo)) score.habilidades += 1;
-      if (/respira|corpo|postura|compaix/i.test(pref)) score.compaixao += 1;
-
-      const plano = [];
-
-      const s1 = { semana: 1, titulo: "Semana 1 — Base e sobrevivência", itens: [] };
-      if (score.crise > 0) {
-        s1.itens.push(
-          "DBT—STOP diário (2 min): parar, postura neutra, respiração 4–6 (5 ciclos)",
-          "DBT—TIPP SOS: água fria/nuca + respiração 4–6 quando ≥7/10"
-        );
-      }
-      s1.itens.push(
-        "Rotina mínima de sono: horário fixo + 30 min sem tela",
-        "Psicoeducação: nomear queixa e objetivo em 1 frase"
-      );
-      plano.push(s1);
-
-      const s2 = { semana: 2, titulo: "Semana 2 — Regulação e contato", itens: [] };
-      if (score.compaixao > 0) {
-        s2.itens.push(
-          "CFT—postura corajosa 2x/dia (peito 5% aberto, mandíbula solta)",
-          "CFT—frase-âncora: “Eu vejo. Eu fico. Próximo passo possível: ___.”"
-        );
-      }
-      if (score.experimento > 0 || score.habilidades === 0) {
-        s2.itens.push("Gestalt—experimento de cadeira interna 1x/semana (parte crítica ↔ vulnerável)");
-      }
-      plano.push(s2);
-
-      const s3 = { semana: 3, titulo: "Semana 3 — Habilidade/Exposição", itens: [] };
-      if (score.habilidades > 0) {
-        s3.itens.push(
-          "DBT—DEAR MAN: escrever e praticar 1 pedido real (descrição, expressão, afirmação, reforço)",
-          "GIVE/FAST para manter vínculo + autorrespeito"
-        );
-      }
-      if (score.exposicao > 0) {
-        s3.itens.push("Exposição graduada: listar 5 passos e executar o primeiro (5–10 min)");
-      }
-      plano.push(s3);
-
-      const s4 = { semana: 4, titulo: "Semana 4 — Consolidação", itens: [
-        "Revisão do que funcionou (repetir 2x)",
-        "Auto-feedback: o que ficou mais fácil e por quê"
-      ]};
-      plano.push(s4);
-
-      estado.plano = plano;
-      renderEditor();
-      window.scrollTo({top: editorSec.offsetTop - 12, behavior:'smooth'});
-    });
-
-    function renderEditor(){
-      planoEditor.innerHTML = "";
-      editorSec.style.display = "block";
-
-      estado.plano.forEach((sem) => {
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-          <h3 class="section-title">${sem.titulo}</h3>
-          <ul>${sem.itens.map((t,i)=>`<li contenteditable="true" data-s="${sem.semana}" data-i="${i}">${t}</li>`).join("")}</ul>
-          <div class="toolbar" style="margin-top:8px">
-            <button class="btn ghost" data-add="${sem.semana}">+ item</button>
-            <button class="btn ghost" data-rem="${sem.semana}">- remover último</button>
-          </div>
-        `;
-        planoEditor.appendChild(card);
-      });
-
-      planoEditor.querySelectorAll("[data-add]").forEach(btn=>{
-        btn.addEventListener("click", (e)=>{
-          const s = +e.currentTarget.getAttribute("data-add");
-          const sem = estado.plano.find(x=>x.semana===s);
-          sem.itens.push("Novo item… (edite)");
-          renderEditor();
-        });
-      });
-      planoEditor.querySelectorAll("[data-rem]").forEach(btn=>{
-        btn.addEventListener("click", (e)=>{
-          const s = +e.currentTarget.getAttribute("data-rem");
-          const sem = estado.plano.find(x=>x.semana===s);
-          sem.itens.pop();
-          renderEditor();
-        });
-      });
-      planoEditor.querySelectorAll("li[contenteditable]").forEach(li=>{
-        li.addEventListener("input", ()=>{
-          const s = +li.getAttribute("data-s");
-          const i = +li.getAttribute("data-i");
-          const sem = estado.plano.find(x=>x.semana===s);
-          sem.itens[i] = li.textContent.trim();
-        });
-      });
-    }
-
-    $("#btn-refazer")?.addEventListener("click", ()=>{
-      editorSec.style.display = "none";
-      estado.plano = [];
-    });
-
-    // PDF com Unicode (NotoSans embutido) — sem eval / sem erro de acento
-    $("#btn-pdf")?.addEventListener("click", gerarPDF);
-    async function gerarPDF(){
-      const mod = await import('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js');
-      const { jsPDF } = mod;
-      const fontUrl = 'https://cdn.jsdelivr.net/gh/googlefonts/noto-fonts/hinted/ttf/NotoSans/NotoSans-Regular.ttf';
-      const buf = await fetch(fontUrl).then(r=>r.arrayBuffer());
-      const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
-
-      const doc = new jsPDF({unit:'pt', format:'a4'});
-      doc.addFileToVFS("NotoSans-Regular.ttf", b64);
-      doc.addFont("NotoSans-Regular.ttf", "Noto", "normal");
-      doc.setFont("Noto");
-
-      const margem=40, larg=595.28 - margem*2;
-      const hoje = new Date().toLocaleDateString('pt-BR');
-      const { nome, queixa, objetivo } = estado.cliente;
-
-      doc.setFontSize(16); doc.text("Parecer + Plano de 30 dias — Mentor Humanista", margem, 60);
-      doc.setFontSize(11);
-      doc.text(`Nome: ${nome||'—'}   •   Data: ${hoje}`, margem, 80);
-      doc.text(`Queixa: ${queixa||'—'}`, margem, 96);
-      doc.text(`Objetivo: ${objetivo||'—'}`, margem, 112);
-
-      let y = 140;
-      estado.plano.forEach(sem=>{
-        doc.setFontSize(13); doc.text(sem.titulo, margem, y); y+=12;
-        doc.setFontSize(11);
-        const lines = doc.splitTextToSize(sem.itens.map(i=>"• "+i).join("\n"), larg);
-        lines.forEach(line=>{ if(y>780){doc.addPage(); y=60;} doc.text(line, margem, y); y+=14; });
-        y+=6;
-      });
-
-      doc.save(`Protocolo_${(nome||'Cliente').replace(/\s+/g,'_')}_${hoje}.pdf`);
-    }
-
-    // auto-resize para embed em Hotmart
-    (function(){
-      function postHeight(){
-        const h = document.documentElement.scrollHeight || document.body.scrollHeight || 1200;
-        try { window.parent.postMessage({type:'mh:height', height:h}, '*'); } catch(e){}
-      }
-      const ro = new ResizeObserver(()=>postHeight());
-      ro.observe(document.documentElement);
-      window.addEventListener('load', postHeight);
-      document.addEventListener('input', ()=>setTimeout(postHeight, 120));
-      document.addEventListener('click', ()=>setTimeout(postHeight, 120));
-      window.addEventListener('message', (ev)=>{ if(ev.data && ev.data.type==='mh:height:request'){ postHeight(); } });
-    })();
-  </script>
+  <script src="app.js" defer></script>
 </body>
 </html>
