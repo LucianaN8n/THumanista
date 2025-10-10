@@ -7,17 +7,6 @@
   <meta name="description" content="Anamnese + seleção de técnicas (máx. 3) com roteiro detalhado, cronometrado e PDF.">
   <link rel="stylesheet" href="styles.css" />
   <script src="vendor/jspdf.umd.min.js" defer></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function(){
-      setTimeout(function(){
-        if(!(window.jspdf && window.jspdf.jsPDF)){
-          var s=document.createElement('script');
-          s.src='https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js';
-          s.defer=true; document.head.appendChild(s);
-        }
-      }, 200);
-    });
-  </script>
 </head>
 <body>
   <header class="container pagebar">

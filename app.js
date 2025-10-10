@@ -1,34 +1,19 @@
 (function(){
   const $ = s => document.querySelector(s);
   const $$ = s => Array.from(document.querySelectorAll(s));
-  $("#today").textContent = new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(new Date());
-
-  const fields = {
-    nome: $("#nome"),
-    idade: $("#idade"),
-    queixa: $("#queixa"),
-    objetivo: $("#objetivo"),
-    severidade: $("#severidade"),
-    riscos: $("#riscos"),
-    obs: $("#obs"),
-    parecer: $("#parecer"),
-  };
+  const fmt = new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" });
+  const today = fmt.format(new Date());
+  (document.getElementById("today")||{}).textContent = today;
 
   function postHeight(){
     const h = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
     try{ parent.postMessage({type:'thse-resize', height:h}, '*'); }catch(e){}
   }
-  const ro = new ResizeObserver(()=> postHeight());
-  ro.observe(document.body);
+  new ResizeObserver(()=> postHeight()).observe(document.body);
   window.addEventListener('load', postHeight);
   window.addEventListener('resize', postHeight);
 
-  const TECHS = {
-    CFT:"Terapia Focada na Compaixão (CFT)",
-    DBT:"Terapia Comportamental Dialética (DBT)",
-    GESTALT:"Terapia Gestalt",
-    EXPOSICAO:"Terapia de exposição gradual",
-  };
+  const TECHS = { CFT:"Terapia Focada na Compaixão (CFT)", DBT:"Terapia Comportamental Dialética (DBT)", GESTALT:"Terapia Gestalt", EXPOSICAO:"Terapia de exposição gradual" };
 
   function getSelections(){
     const sintomas = $$(".sym:checked").map(c=>c.value);
@@ -50,7 +35,6 @@
   }
   const top3 = sc => Object.entries(sc).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k])=>k);
 
-  // Aprofundamento: scripts cronometrados (30 ou 50 min) com prompts + tarefas + indicadores
   function deepScript(key){
     if(key==="GESTALT"){
       return [
@@ -60,7 +44,7 @@
         "- 08 min: psicoeducação do ciclo de contato. Exemplo cotidiano do paciente.",
         "- 12 min: experimento cadeira vazia (crítico x vulnerável). Condução: 'diga ao crítico: o que você precisa de mim?'.",
         "- 05 min: aterramento 4-4-6 e varredura corporal.",
-        "- 10 min: integrar aprendizagens, transformar fala de dever em escolha ('eu escolho...').",
+        "- 10 min: integrar aprendizagens; transformar fala de dever em escolha ('eu escolho ...').",
         "- 05 min: combinar tarefa e indicadores.",
         "Tarefa: diário de awareness 3x/dia (corpo - necessidade - micro-ação).",
         "Indicadores: mais linguagem de responsabilidade; menor reatividade corporal.",
@@ -90,7 +74,7 @@
         "Sessão 1 - 50 min",
         "- 05 min: alinhamento e metas. Mini mindfulness 3 min (respiração e 5 sentidos).",
         "- 10 min: função das emoções e vulnerabilidades (sono, alimentação, estresse).",
-        "- 15 min: Tolerância à aflição - ensinar TIP (temperatura, exercício leve, respiração) e ACCEPTS (atividades, contribuir, comparações, emoções opostas, afastar, pensamentos, sensações). Escolher 2.",
+        "- 15 min: Tolerância à aflição - TIP (temperatura, intensificar exercício leve, respiração) e ACCEPTS (atividades, contribuir, comparações, emoções opostas, afastar, pensamentos, sensações). Escolher 2.",
         "- 10 min: ensaio de uso em gatilhos reais (roteirizar).",
         "- 10 min: plano diário de habilidades.",
         "Tarefa: cartela de habilidades - praticar 2 por dia (uma TIP e uma ACCEPTS).",
@@ -98,15 +82,15 @@
         "",
         "Sessão 2 - 50 min",
         "- 05 min: revisão da prática e barreiras.",
-        "- 15 min: regulação emocional - opostos à emoção + construção de atividades com valor.",
+        "- 15 min: regulação emocional - opostos à emoção + atividades com valor.",
         "- 20 min: DEAR MAN (descrever, expressar, afirmar, reforçar, mindful, aparecer confiante, negociar) - role-play de um pedido difícil.",
         "- 10 min: plano de generalização (quando, onde, com quem).",
         "Tarefa: 1 DEAR MAN real na semana + registro breve.",
-        "Indicadores: aumento de assertividade; menos discussões em espiral.",
+        "Indicadores: mais assertividade; menos discussões em espiral.",
         "",
         "Sessão 3 - 50 min",
         "- 05 min: checagem de risco e rede de apoio.",
-        "- 15 min: construir Plano de Crise (passos 1- foco, 2- habilidades, 3- contatos).",
+        "- 15 min: Plano de Crise (passos 1 foco, 2 habilidades, 3 contatos).",
         "- 15 min: tolerância à aflição avançada - kit de emergência (gel, música, respiração, frases de validação).",
         "- 10 min: revisar vitórias e ajustar metas.",
         "- 05 min: encerramento com mindfulness de gratidão 2 min."
@@ -145,23 +129,17 @@
   }
 
   function buildParecer(){
-    const nome = fields.nome.value.trim();
-    const idade = fields.idade.value.trim();
-    const queixa = fields.queixa.value.trim();
-    const objetivo = fields.objetivo.value.trim();
-    const sev = Number(fields.severidade.value);
-    const riscos = fields.riscos.value.trim();
-    const obs = fields.obs.value.trim();
-    const {sintomas, padroes, prefs} = getSelections();
+    const nome = ($("#nome").value||"").trim();
+    const idade = ($("#idade").value||"").trim();
+    const queixa = ($("#queixa").value||"").trim();
+    const objetivo = ($("#objetivo").value||"").trim();
+    const sev = Number($("#severidade").value||6);
+    const riscos = ($("#riscos").value||"").trim();
+    const obs = ($("#obs").value||"").trim();
 
-    // ranking simples priorizando GESTALT/DBT/CFT quando empatado
-    const sc = (function(){
-      const base = {CFT:0, DBT:0, GESTALT:0, EXPOSICAO:0};
-      const s = scoreTechs({sintomas, padroes, prefs});
-      return Object.assign(base, s);
-    })();
-    let t3 = top3(sc);
-    if(t3.length<3) t3 = ["GESTALT","DBT","CFT"].slice(0,3);
+    const sel = getSelections();
+    let t3 = top3(scoreTechs(sel));
+    if(t3.length<3) t3 = ["GESTALT","DBT","CFT"];
 
     const tag = t => `<span class="tag">${t}</span>`;
     const tagify = arr => arr.length ? arr.map(tag).join(" ") : "—";
@@ -186,23 +164,21 @@
       blocks
     ].join("");
 
-    // texto PDF
-    const header = [
-      f"Paciente: {nome or '—'}",
-      f"Idade: {idade or '—'}",
-      new Intl.DateTimeFormat("pt-BR").format(new Date()),
-      f"Severidade: {sev}/10",
-      f"Queixa: {queixa or '—'}",
-      f"Objetivo: {objetivo or '—'}"
-    ].join("\\n");
-
-    const corpo = t3.map(k => `${TECHS[k]}\\n${deepScript(k)}`).join("\\n\\n");
-    return {texto: header + "\\n\\n" + corpo};
+    const headerLines = [
+      `Paciente: ${nome||"—"}`,
+      `Idade: ${idade||"—"}`,
+      `Data: ${today}`,
+      `Severidade: ${sev}/10`,
+      `Queixa: ${queixa||"—"}`,
+      `Objetivo: ${objetivo||"—"}`
+    ];
+    const corpo = t3.map(k => `${TECHS[k]}\n${deepScript(k)}`).join("\n\n");
+    return {texto: headerLines.join("\n") + "\n\n" + corpo};
   }
 
   function baixarPDF(){
     const { jsPDF } = window.jspdf || {};
-    if (!jsPDF){ alert("PDF off-line: coloque /vendor/jspdf.umd.min.js ou permita a CDN."); return; }
+    if (!jsPDF){ alert("PDF off-line: coloque /vendor/jspdf.umd.min.js (ou permita a CDN)."); return; }
     const {texto} = buildParecer();
     const doc = new jsPDF({unit:"pt", format:"a4"});
     const margin = 48, maxWidth = 515;
@@ -210,7 +186,7 @@
     doc.text("THSE – Mentor Humanista (Gestalt • DBT • CFT)", margin, 54);
     doc.setFont("Helvetica","Normal"); doc.setFontSize(11.5);
     let y = 76;
-    texto.split("\\n").forEach(p => {
+    texto.split("\n").forEach(p => {
       const lines = doc.splitTextToSize(p, maxWidth);
       for(const line of lines){
         if (y>800){ doc.addPage(); doc.setFont("Helvetica","Normal"); doc.setFontSize(11.5); y=60; }
@@ -222,18 +198,22 @@
     doc.save("Protocolo_THSE.pdf");
   }
 
-  // Bind
-  document.getElementById("pdf2").addEventListener("click", baixarPDF);
-  document.getElementById("fab-pdf").addEventListener("click", baixarPDF);
-  document.getElementById("pdfTop").addEventListener("click", baixarPDF);
-  document.getElementById("gerar").addEventListener("click", ()=>{buildParecer(); document.getElementById("fab-pdf").style.display="flex"; postHeight();});
+  document.getElementById("gerar").addEventListener("click", ()=>{
+    buildParecer();
+    const fab = document.getElementById("fab-pdf");
+    if (fab) fab.style.display = "flex";
+    postHeight();
+  });
   document.getElementById("pdf").addEventListener("click", baixarPDF);
+  document.getElementById("pdfTop").addEventListener("click", baixarPDF);
+  document.getElementById("pdf2").addEventListener("click", baixarPDF);
   document.getElementById("limpar").addEventListener("click", ()=>{
-    ["nome","idade","queixa","objetivo","riscos","obs"].forEach(id=> document.getElementById(id).value="");
+    ["nome","idade","queixa","objetivo","riscos","obs"].forEach(id=> {const el=document.getElementById(id); if(el) el.value="";});
     $$("input[type=checkbox]").forEach(c=> c.checked=false);
-    document.getElementById("severidade").value=6; document.getElementById("sevVal").textContent="6";
-    document.getElementById("parecer").innerHTML='<p>Preencha a anamnese e clique em <strong>Gerar protocolo</strong>.</p>';
-    document.getElementById("fab-pdf").style.display="none";
+    const sev = document.getElementById("severidade"); if(sev){ sev.value=6; (document.getElementById("sevVal")||{}).textContent="6"; }
+    const fab = document.getElementById("fab-pdf"); if (fab) fab.style.display="none";
+    const p = document.getElementById("parecer");
+    if(p) p.innerHTML = '<p>Preencha a anamnese e clique em <strong>Gerar protocolo</strong>.</p>';
     postHeight();
     window.scrollTo({top:0, behavior:"smooth"});
   });
