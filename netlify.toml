@@ -1,18 +1,12 @@
-# Netlify config — allow embedding inside Hotmart (frame-ancestors)
+# Netlify config — libera embed na Hotmart
 [build]
   publish = "."
 
 [[headers]]
   for = "/*"
   [headers.values]
-  # Permite que páginas do Hotmart façam embed via <iframe>
-  Content-Security-Policy = "default-src 'self' https://cdn.jsdelivr.net; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'self' https://*.hotmart.com https://hotmart.com https://*.hotmart.com.br;"
+  Content-Security-Policy = "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'self' https://*.hotmart.com https://hotmart.com https://*.hotmart.com.br;"
   Referrer-Policy = "no-referrer-when-downgrade"
   X-Content-Type-Options = "nosniff"
   X-Frame-Options = "ALLOWALL"
   Permissions-Policy = "clipboard-write=(self)"
-
-# Observações:
-# - Usamos apenas CSP (frame-ancestors) para liberar em hotmart.com / hotmart.com.br
-# - X-Frame-Options ALLOWALL é ignorado por alguns browsers, mas não bloqueia; CSP prevalece.
-# - jsPDF via CDN jsDelivr já permitido acima.
