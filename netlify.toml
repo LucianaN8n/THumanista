@@ -1,4 +1,4 @@
-# Netlify config — libera embed na Hotmart
+# Netlify config — embed Hotmart liberado
 [build]
   publish = "."
 

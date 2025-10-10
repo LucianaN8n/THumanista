@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>THSE – Mentor Humanista (Gestalt + Comportamental)</title>
-  <meta name="description" content="Anamnese rápida + seleção de técnicas (máx. 3) com roteiro detalhado e PDF.">
+  <title>THSE – Mentor Humanista (Gestalt • DBT • CFT)</title>
+  <meta name="description" content="Anamnese + seleção de técnicas (máx. 3) com roteiro detalhado, cronometrado e PDF.">
   <link rel="stylesheet" href="styles.css" />
   <script src="vendor/jspdf.umd.min.js" defer></script>
   <script>
@@ -43,14 +43,14 @@
           <textarea id="queixa" rows="2" placeholder="Ex.: isolamento social, medo de rejeição…"></textarea>
         </label>
       </div>
-      <div class="row tight">
+      <div class="row tight last">
         <label>Objetivo terapêutico (do paciente)
           <textarea id="objetivo" rows="2" placeholder="Ex.: comunicar-se melhor, ampliar vínculos, reduzir crises…"></textarea>
         </label>
       </div>
     </section>
 
-    <section class="card" id="card-anamnese">
+    <section class="card compact" id="card-anamnese">
       <h2>2) Anamnese breve</h2>
       <div class="qgroup">
         <h3>Sintomas / temas (marque os que se aplicam):</h3>
@@ -71,7 +71,7 @@
         </div>
       </div>
 
-      <div class="qgroup">
+      <div class="qgroup smallgap">
         <h3>Severidade percebida (0–10)</h3>
         <input type="range" id="severidade" min="0" max="10" step="1" value="6" oninput="sevVal.textContent=this.value">
         <div>Valor: <strong id="sevVal">6</strong></div>
@@ -91,36 +91,26 @@
         </div>
       </div>
 
-      <div class="qgroup">
-        <h3>Preferências do paciente</h3>
-        <div class="pillbox">
-          <label><input type="checkbox" value="diretivo" class="pref"> Prefere intervenções mais diretivas</label>
-          <label><input type="checkbox" value="experiencial" class="pref"> Gosta de exercícios vivenciais</label>
-          <label><input type="checkbox" value="espiritual" class="pref"> Integração espiritual (ex.: Desenho Humano)</label>
-          <label><input type="checkbox" value="ritmo_suave" class="pref"> Pede ritmo mais suave / acolhedor</label>
-        </div>
-      </div>
-
       <div class="row tight">
         <label>Riscos/atenção
           <textarea id="riscos" rows="2" placeholder="Ex.: ideação suicida, violência doméstica, uso abusivo, etc."></textarea>
         </label>
       </div>
 
-      <div class="row tight">
+      <div class="row tight last">
         <label>Observações do terapeuta
           <textarea id="obs" rows="2" placeholder="Hipóteses iniciais, fatores contextuais, preferências de setting…"></textarea>
         </label>
       </div>
 
-      <div class="actions">
+      <div class="actions topgap">
         <button id="gerar" class="btn">🧭 Gerar protocolo</button>
         <button id="pdf" class="btn outline">⬇️ Baixar PDF</button>
         <button id="limpar" class="btn ghost">🧹 Limpar</button>
       </div>
     </section>
 
-    <section class="card">
+    <section class="card compact" id="card-parecer">
       <div class="parecer-toolbar">
         <strong>Protocolo</strong>
         <span class="spacer"></span>
@@ -128,7 +118,7 @@
       </div>
       <h2>3) Parecer do Especialista</h2>
       <div id="parecer" class="parecer">
-        <p>Preencha a anamnese e clique em <strong>Gerar protocolo</strong>. O sistema selecionará até <strong>3 técnicas</strong> e entregará um <strong>roteiro passo a passo</strong> (Sessão 1–3), com prompts de condução, tarefas, indicadores e cuidados.</p>
+        <p>Preencha a anamnese e clique em <strong>Gerar protocolo</strong>. O sistema selecionará até <strong>3 técnicas</strong> e entregará um <strong>roteiro passo a passo</strong> (Sessão 1–3), com scripts, tarefas, indicadores e cuidados.</p>
       </div>
     </section>
 
