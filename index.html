@@ -115,5 +115,26 @@
   </footer>
 
   <script src="app.js" defer></script>
+  <script>
+(function(){
+  // Envia altura ao parent (Hotmart)
+  function postHeight(){
+    const h = document.documentElement.scrollHeight || document.body.scrollHeight || 1200;
+    try { window.parent.postMessage({type:'mh:height', height:h}, '*'); } catch(e){}
+  }
+  // Observa mudanças de layout
+  const ro = new ResizeObserver(()=>postHeight());
+  ro.observe(document.documentElement);
+  // Envia ao carregar e após pequenas interações
+  window.addEventListener('load', postHeight);
+  document.addEventListener('click', ()=>setTimeout(postHeight, 120));
+  document.addEventListener('input', ()=>setTimeout(postHeight, 120));
+  // Responde handshake do parent
+  window.addEventListener('message', (ev)=>{
+    if(ev.data && ev.data.type === 'mh:height:request'){ postHeight(); }
+  });
+})();
+</script>
+
 </body>
 </html>
