@@ -3,43 +3,28 @@ const $ = (s)=>document.querySelector(s);
 const editorEl = $('#plano-editor');
 window.estado = { cliente:{}, anamnese:{}, plano:[] };
 
-// Guias clínicas
+// Guias clínicas (mesmo conteúdo de antes, abreviado aqui)
 const GUIDES = [
  {key:'dbt', title:'DBT – STOP + TIPP (Crise/alta ativação)', when:'Intensidade ≥7/10; impulso alto.', steps:[
-  'Nomeie a crise e a meta: baixar para ≤4/10.',
-  'Postura neutra (pés firmes, ombros soltos, mandíbula solta).',
-  'Respiração 4–6 (5 ciclos).',
-  'Temperatura fria na nuca/mãos por 20–30s.',
-  'Exercício intenso e curto (45–60s).',
-  'Checagem e ancoragem (ação segura de 10 min).'
- ], script:'“Eu guio. Entre 4, saia 6… frio na nuca… Você consegue passar 2 minutos sem piorar a crise.”'},
- {key:'cft', title:'CFT – Postura/voz compassiva', when:'Vergonha, rigidez, “tenho que”.', steps:[
-  'Postura corajosa (peito 5% aberto).',
-  'Respiração 4–6 por 3 ciclos.',
-  'Crítico diz __ → Resposta compassiva __.',
-  'Âncora: “Eu vejo. Eu fico. Próximo passo possível: ___.”',
-  'Micro-ação de 5–10 min.'
- ], script:'“Repita num tom 15% mais lento: Eu vejo. Eu fico. O próximo passo possível é ___.”'},
- {key:'gestalt', title:'Gestalt – Cadeira interna', when:'Ambivalência/evitação relacional.', steps:[
-  'Nomear partes (Crítico × Vulnerável; Controlador × Espontâneo).',
-  'Troca de cadeiras: 2–3 falas por parte.',
-  'Integração: o que cada parte precisa para 1 passo?',
-  'Ação final: pedido/limite/experimento.'
- ], script:'“Da cadeira do Crítico: ‘Se eu te protejo, ganho o quê?’… Troca… ‘Hoje, o passo é ___.’”'},
- {key:'fap', title:'FAP – Coragem relacional no aqui-agora', when:'Dificuldade em pedir/discordar.', steps:[
-  'Evocar comportamento na sessão (“como diria não para mim?”).',
-  'Notar topografia/função.',
-  'Modelar 2 frases de pedido direto.',
-  'Reforçar natural.',
-  'Generalizar para 1 pessoa da vida real.'
+  'Meta: baixar para ≤4/10. Postura neutra.',
+  'Respiração 4–6 (5 ciclos). Frio na nuca 20–30s.',
+  'Exercício 45–60s. Checagem e ancoragem.'
+ ], script:'“Entre 4, saia 6… Vamos passar 2 minutos sem piorar a crise.”'},
+ {key:'cft', title:'CFT – Postura/voz compassiva', when:'Vergonha/rigidez.', steps:[
+  'Postura corajosa + respiração 3 ciclos.',
+  'Crítico → resposta compassiva.',
+  'Âncora: “Eu vejo. Eu fico. Próximo passo possível: ___.”'
+ ], script:'“Repita mais lento: Eu vejo. Eu fico. Próximo passo possível é ___.”'},
+ {key:'gestalt', title:'Gestalt – Cadeira interna', when:'Ambivalência relacional.', steps:[
+  'Nomear partes e trocar cadeiras.',
+  'Integração e ação final (pedido/limite).'
+ ], script:'“Da cadeira do Crítico… Hoje, o passo é ___. ”'},
+ {key:'fap', title:'FAP – Coragem relacional', when:'Pedir/discordar.', steps:[
+  'Evocar aqui-agora. Modelar pedido direto. Reforço. Generalizar.'
  ], script:'“Diga agora: Eu preciso de ___. Como foi no corpo?”'},
- {key:'abc', title:'Análise Comportamental – Exposição graduada', when:'Medo mantido por fuga/rituais.', steps:[
-  'Listar 5 passos (fácil→difícil).',
-  'Executar o 1º passo (5–10 min) com STOP antes.',
-  'Sem neutralizar (sem checar/garantias).',
-  'Reforço imediato.',
-  'Revisar dados (0–10, duração, aprendizado).'
- ], script:'“Faremos só o passo 1 por 5–10 minutos; nada de neutralizar. Depois reforço e revisão.”'}
+ {key:'abc', title:'Exposição graduada', when:'Evitação/medo.', steps:[
+  'Lista 5 passos. Executar 1º por 5–10 min sem neutralizar.'
+ ], script:'“Faremos só o passo 1 por 5–10 min; sem neutralizar.”'}
 ];
 
 function renderGuides() {
@@ -56,7 +41,7 @@ function renderGuides() {
 }
 renderGuides();
 
-// Gerar protocolo
+// Gerar protocolo com plano de ação semanal
 $('#btn-gerar')?.addEventListener('click', ()=>{
   const nome = $('#f-nome').value.trim();
   const queixa = $('#f-queixa').value.trim();
@@ -79,26 +64,35 @@ $('#btn-gerar')?.addEventListener('click', ()=>{
   if (/falar|pedido|limite|relacion|conversa|energia/i.test(objetivo)) score.habilidades+=1;
   if (/respira|corpo|postura|compaix/i.test(pref)) score.compaixao+=1;
 
+  // Plano de ação semanal (cada semana tem Intervenções + Indicadores/Follow-up)
   const plano=[];
-  const s1={semana:1,titulo:'Semana 1 — Base e sobrevivência',itens:[]};
-  if(score.crise>0){ s1.itens.push('DBT—STOP diário (2 min).','DBT—TIPP SOS (frio na nuca + respiração 4–6) quando ≥7/10.');}
-  s1.itens.push('Sono: horário fixo + 30 min sem tela.','Psicoeducação: nomear queixa e objetivo em 1 frase.');
+
+  const s1={semana:1,titulo:'Semana 1 — Base e sobrevivência',
+    interv:[ 'DBT—STOP diário (2 min).', (score.crise>0?'DBT—TIPP SOS quando ≥7/10.':null), 'Sono: horário fixo + 30 min sem tela.' ].filter(Boolean),
+    indic:['SUDS antes/depois (0–10).','Horas de sono; hora de deitar.','1 micro-ação segura pós-crise.']
+  };
   plano.push(s1);
 
-  const s2={semana:2,titulo:'Semana 2 — Regulação e contato',itens:[]};
-  if(score.compaixao>0){ s2.itens.push('CFT—postura corajosa 2x/dia.','CFT—âncora: “Eu vejo. Eu fico. Próximo passo possível: ___.”'); }
-  s2.itens.push('Gestalt—cadeira interna 1x/semana (parte crítica × vulnerável).');
+  const s2={semana:2,titulo:'Semana 2 — Regulação e contato',
+    interv:[ (score.compaixao>0?'CFT—postura corajosa 2x/dia + âncora.':null), 'Gestalt—cadeira interna 1x/semana.' ].filter(Boolean),
+    indic:['Relato de autocrítica → resposta compassiva.','Decisão tomada após cadeira interna.']
+  };
   plano.push(s2);
 
-  const s3={semana:3,titulo:'Semana 3 — Habilidade/Exposição',itens:[]};
-  if(score.habilidades>0){ s3.itens.push('DEAR MAN: 1 pedido real (treino + execução).','GIVE/FAST para vínculo + autorrespeito.');}
-  if(score.exposicao>0){ s3.itens.push('Exposição graduada: executar o 1º passo (5–10 min) sem neutralizar.');}
+  const s3={semana:3,titulo:'Semana 3 — Habilidade/Exposição',
+    interv:[ (score.habilidades>0?'DEAR MAN: 1 pedido real (treino + execução).':null), (score.exposicao>0?'Exposição: executar 1º passo (5–10 min) sem neutralizar.':null) ].filter(Boolean),
+    indic:['Pedido feito? (sim/não, com quem)','SUDS início/fim da exposição; duração.']
+  };
   plano.push(s3);
 
-  const s4={semana:4,titulo:'Semana 4 — Consolidação',itens:['Repetir 2x o que funcionou.','Auto-feedback: o que ficou mais fácil e por quê.']};
+  const s4={semana:4,titulo:'Semana 4 — Consolidação',
+    interv:['Repetir 2x o que funcionou.','Revisão + próximos passos.'],
+    indic:['O que ficou mais fácil e por quê','Plano para o mês seguinte (1 foco)']
+  };
   plano.push(s4);
 
-  window.estado.plano=plano;
+  // Para o editor na tela (lista simples)
+  window.estado.plano = plano.map(w=>({ semana:w.semana, titulo:w.titulo, itens:[...w.interv] }));
   renderPlan();
 });
 
@@ -132,7 +126,7 @@ function renderPlan(){
   }));
 }
 
-// ===== PDF compacto com overlap =====
+// ===== PDF com layout DUAS COLUNAS =====
 document.getElementById('btn-pdf')?.addEventListener('click', gerarPDF);
 async function gerarPDF(){
   const html2canvas = (await import('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js')).default;
@@ -145,29 +139,39 @@ async function gerarPDF(){
   const gat = window.estado?.anamnese?.gatilho || '—';
   const hoje = new Date().toLocaleDateString('pt-BR');
 
+  // construir tabela semanal com duas colunas (Intervenções | Indicadores/Follow-up)
+  const weekly = buildWeeklyTable();
+
   const wrap = document.createElement('div');
   wrap.className = 'print-wrap';
   wrap.innerHTML = `
     <h2>Parecer Clínico – Mentor Humanista</h2>
     <div class="meta">Nome: <b>${esc(nome)}</b> • Data: ${hoje}<br>
       Queixa: ${esc(queixa)}<br>Objetivo: ${esc(objetivo)}</div>
-    <div class="block"><h3>Formulação breve</h3>
-      <ul>
-        <li>Função predominante: ${esc(fun)}.</li>
-        <li>Gatilhos principais: ${esc(gat)}.</li>
-        <li>Recursos presentes: (preencher).</li>
-        <li>Hipóteses de manutenção: (preencher).</li>
-      </ul>
+
+    <div class="block cols-2">
+      <div>
+        <h3>Formulação breve</h3>
+        <ul>
+          <li>Função predominante: ${esc(fun)}.</li>
+          <li>Gatilhos principais: ${esc(gat)}.</li>
+          <li>Recursos: (preencher).</li>
+          <li>Hipóteses: (preencher).</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Metas operacionais</h3>
+        <ul>
+          <li>S1: crise/sono.</li>
+          <li>S2: regulação/contato.</li>
+          <li>S3: habilidade/exposição.</li>
+          <li>S4: consolidação.</li>
+        </ul>
+      </div>
     </div>
-    <div class="block"><h3>Metas operacionais (4 semanas)</h3>
-      <ul>
-        <li>Semana 1: sobreviver a crises + sono mínimo.</li>
-        <li>Semana 2: regulação/contato (CFT/experimentos).</li>
-        <li>Semana 3: habilidade relacional ou exposição.</li>
-        <li>Semana 4: consolidação e revisão.</li>
-      </ul>
-    </div>
-    ${renderSemanas(window.estado?.plano || [])}
+
+    ${weekly}
+
     <div class="block"><h3>Observações e combinações</h3><ul><li>(preencher)</li></ul></div>
   `;
   document.body.appendChild(wrap);
@@ -187,7 +191,7 @@ async function gerarPDF(){
     let srcY = 0;
     const usablePt = pageH - margin*2;
     const usablePx = usablePt * (canvas.width / imgW);
-    const overlapPx = 6 * (canvas.width / imgW); // ~6pt
+    const overlapPx = 6 * (canvas.width / imgW);
     while (srcY < canvas.height) {
       const sliceH = Math.min(usablePx, canvas.height - srcY);
       const part = document.createElement('canvas');
@@ -205,10 +209,29 @@ async function gerarPDF(){
   wrap.remove();
 
   function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
-  function renderSemanas(plano){
-    return (plano||[]).map(sem=>`
-      <div class="block"><h3>${esc(sem.titulo||'Semana')}</h3>
-        <ul>${(sem.itens||[]).map(i=>`<li>${esc(i)}</li>`).join('')}</ul>
-      </div>`).join('');
+  function buildWeeklyTable(){
+    // reconstruir estrutura semanal com campos 'interv' e 'indic'
+    const weeks = [];
+    for(let w of window.estado.plano){
+      // se não tiver os campos riccos (por clique direto), derivar
+      weeks.push({
+        title: w.titulo || 'Semana',
+        interv: (w.interv || w.itens || []),
+        indic:  (w.indic || ['Progresso percebido (0–10)','Anotações do que funcionou'])
+      });
+    }
+    return weeks.map((w,i)=>`<div class="block">
+      <h3>${w.title}</h3>
+      <div class="table-like">
+        <div class="cell">
+          <b>Intervenções da semana</b>
+          <ul>${w.interv.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>
+        </div>
+        <div class="cell">
+          <b>Indicadores & Follow‑up</b>
+          <ul>${w.indic.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>
+        </div>
+      </div>
+    </div>`).join('');
   }
 }
