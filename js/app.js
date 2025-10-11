@@ -1,9 +1,8 @@
-// Estado global
+// Estado
 const $ = (s)=>document.querySelector(s);
 const editorEl = $('#plano-editor');
 window.estado = { cliente:{}, anamnese:{}, semanas:[] };
 
-// Guias (resumo)
 const GUIDES = [
   {t:'DBT – STOP/TIPP', d:'Crise/alta ativação: STOP 2min; TIPP (frio na nuca, resp 4–6, exercício curto).'},
   {t:'CFT – Postura/Voz', d:'Vergonha/rigidez: postura corajosa, âncora “Eu vejo. Eu fico. Próximo passo possível: ___.”'},
@@ -22,7 +21,7 @@ function renderGuides(){
 }
 renderGuides();
 
-// Gera SEMPRE 4 semanas (com itens default + baseados na anamnese)
+// Sempre monta 4 semanas
 $('#btn-gerar')?.addEventListener('click', ()=>{
   const nome = $('#f-nome').value.trim();
   const queixa = $('#f-queixa').value.trim();
@@ -51,7 +50,7 @@ $('#btn-gerar')?.addEventListener('click', ()=>{
 
   window.estado.semanas = [
     {titulo:'Semana 1 — Base e sobrevivência', itens:S1, indicadores:['SUDS antes/depois (0–10)','Horas de sono','1 micro-ação segura pós-crise']},
-    {titulo:'Semana 2 — Regulação e contato', itens:S2, indicadores:['Relato de autocrítica → resposta compassiva','Decisão após cadeira interna']},
+    {titulo:'Semana 2 — Regulação e contato', itens:S2, indicadores:['Autocrítica → resposta compassiva','Decisão após cadeira interna']},
     {titulo:'Semana 3 — Habilidade/Exposição', itens:S3, indicadores:['Pedido feito? (sim/não, com quem)','SUDS início/fim; duração']},
     {titulo:'Semana 4 — Consolidação', itens:S4, indicadores:['O que ficou mais fácil e por quê','Plano do mês seguinte (1 foco)']},
   ];
@@ -85,11 +84,17 @@ function renderPlan(){
   }));
 }
 
-// ===== PDF (duas colunas + semanal lado a lado) =====
+// ===== PDF com fallback CSP-safe =====
 document.getElementById('btn-pdf')?.addEventListener('click', gerarPDF);
 async function gerarPDF(){
-  const html2canvas = (await import('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js')).default;
-  const { jsPDF } = await import('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js');
+  let html2canvasMod, jsPDFMod;
+  try{
+    html2canvasMod = (await import('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js')).default;
+    jsPDFMod = (await import('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js')).jsPDF;
+  }catch(e){
+    console.warn('CDN bloqueada por CSP. Usando fallback de impressão.', e);
+    return fallbackPrint();
+  }
 
   const nome = (window.estado?.cliente?.nome || 'Cliente').trim();
   const queixa = window.estado?.cliente?.queixa || '—';
@@ -98,42 +103,11 @@ async function gerarPDF(){
   const gat = window.estado?.anamnese?.gatilho || '—';
   const hoje = new Date().toLocaleDateString('pt-BR');
 
-  const wrap = document.createElement('div');
-  wrap.className='print-wrap';
-  wrap.innerHTML = `
-    <h2>Parecer Clínico – Mentor Humanista</h2>
-    <div class="meta">Nome: <b>${esc(nome)}</b> • Data: ${hoje}<br>
-      Queixa: ${esc(queixa)}<br>Objetivo: ${esc(objetivo)}</div>
-
-    <div class="block cols-2">
-      <div>
-        <h3>Formulação breve</h3>
-        <ul>
-          <li>Função predominante: ${esc(fun)}.</li>
-          <li>Gatilhos: ${esc(gat)}.</li>
-          <li>Recursos: (preencher).</li>
-          <li>Hipóteses: (preencher).</li>
-        </ul>
-      </div>
-      <div>
-        <h3>Metas operacionais</h3>
-        <ul>
-          <li>S1: crise/sono.</li>
-          <li>S2: regulação/contato.</li>
-          <li>S3: habilidade/exposição.</li>
-          <li>S4: consolidação.</li>
-        </ul>
-      </div>
-    </div>
-
-    ${renderSemanas(window.estado.semanas || [])}
-
-    <div class="block"><h3>Observações e combinações</h3><ul><li>(preencher)</li></ul></div>
-  `;
+  const wrap = buildPrintDom(nome, queixa, objetivo, fun, gat, hoje);
   document.body.appendChild(wrap);
 
-  const canvas = await html2canvas(wrap, { backgroundColor:'#fff', scale:2, useCORS:true });
-  const pdf = new jsPDF({ unit:'pt', format:'a4' });
+  const canvas = await html2canvasMod(wrap, { backgroundColor:'#fff', scale:2, useCORS:true });
+  const pdf = new jsPDFMod({ unit:'pt', format:'a4' });
   const pageW = pdf.internal.pageSize.getWidth();
   const pageH = pdf.internal.pageSize.getHeight();
   const margin = 22;
@@ -151,8 +125,7 @@ async function gerarPDF(){
     while (srcY < canvas.height) {
       const sliceH = Math.min(usablePx, canvas.height - srcY);
       const part = document.createElement('canvas');
-      part.width = canvas.width;
-      part.height = sliceH;
+      part.width = canvas.width; part.height = sliceH;
       part.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
       const partData = part.toDataURL('image/png');
       const partHpt = (sliceH / canvas.width) * imgW;
@@ -164,23 +137,102 @@ async function gerarPDF(){
   pdf.save(`Protocolo_${nome.replace(/\s+/g,'_')}_${hoje}.pdf`);
   wrap.remove();
 
-  function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
-  function renderSemanas(list){
-    if(!list || !list.length){
-      return '<div class="block"><i>Gere o plano (botão acima) para popular as 4 semanas.</i></div>';
-    }
-    return list.map(w=>`<div class="block">
-      <h3>${esc(w.titulo)}</h3>
-      <div class="table-like">
-        <div class="cell">
-          <b>Intervenções da semana</b>
-          <ul>${(w.itens||[]).map(i=>`<li>${esc(i)}</li>`).join('')}</ul>
+  function buildPrintDom(nome, queixa, objetivo, fun, gat, hoje){
+    const wrap = document.createElement('div');
+    wrap.className='print-wrap';
+    wrap.innerHTML = `
+      <h2>Parecer Clínico – Mentor Humanista</h2>
+      <div class="meta">Nome: <b>${esc(nome)}</b> • Data: ${hoje}<br>
+        Queixa: ${esc(queixa)}<br>Objetivo: ${esc(objetivo)}</div>
+      <div class="block cols-2">
+        <div>
+          <h3>Formulação breve</h3>
+          <ul>
+            <li>Função predominante: ${esc(fun)}.</li>
+            <li>Gatilhos: ${esc(gat)}.</li>
+            <li>Recursos: (preencher).</li>
+            <li>Hipóteses: (preencher).</li>
+          </ul>
         </div>
-        <div class="cell">
-          <b>Indicadores & Follow-up</b>
-          <ul>${(w.indicadores||[]).map(i=>`<li>${esc(i)}</li>`).join('')}</ul>
+        <div>
+          <h3>Metas operacionais</h3>
+          <ul>
+            <li>S1: crise/sono.</li>
+            <li>S2: regulação/contato.</li>
+            <li>S3: habilidade/exposição.</li>
+            <li>S4: consolidação.</li>
+          </ul>
         </div>
       </div>
-    </div>`).join('');
+      ${renderSemanas(window.estado.semanas || [])}
+      <div class="block"><h3>Observações e combinações</h3><ul><li>(preencher)</li></ul></div>`;
+    return wrap;
   }
+  function renderSemanas(list){
+    return (list||[]).map(w=>`
+      <div class="block">
+        <h3>${esc(w.titulo)}</h3>
+        <div class="table-like">
+          <div class="cell"><b>Intervenções da semana</b>
+            <ul>${(w.itens||[]).map(i=>`<li>${esc(i)}</li>`).join('')}</ul>
+          </div>
+          <div class="cell"><b>Indicadores & Follow-up</b>
+            <ul>${(w.indicadores||[]).map(i=>`<li>${esc(i)}</li>`).join('')}</ul>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+  function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+}
+
+// Fallback: abrir janela de impressão (Salvar como PDF) se CDN bloqueada por CSP
+function fallbackPrint(){
+  const nome = (window.estado?.cliente?.nome || 'Cliente').trim();
+  const queixa = window.estado?.cliente?.queixa || '—';
+  const objetivo = window.estado?.cliente?.objetivo || '—';
+  const fun = window.estado?.anamnese?.funcao || '—';
+  const gat = window.estado?.anamnese?.gatilho || '—';
+  const hoje = new Date().toLocaleDateString('pt-BR');
+
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>Parecer – ${nome}</title>
+    <style>${document.querySelector('style')?.textContent || ''}</style>
+  </head><body>
+    <div class="print-wrap">
+      <h2>Parecer Clínico – Mentor Humanista</h2>
+      <div class="meta">Nome: <b>${nome}</b> • Data: ${hoje}<br>
+        Queixa: ${queixa}<br>Objetivo: ${objetivo}</div>
+      <div class="block cols-2">
+        <div>
+          <h3>Formulação breve</h3>
+          <ul>
+            <li>Função predominante: ${fun}.</li>
+            <li>Gatilhos: ${gat}.</li>
+            <li>Recursos: (preencher).</li>
+            <li>Hipóteses: (preencher).</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Metas operacionais</h3>
+          <ul>
+            <li>S1: crise/sono.</li>
+            <li>S2: regulação/contato.</li>
+            <li>S3: habilidade/exposição.</li>
+            <li>S4: consolidação.</li>
+          </ul>
+        </div>
+      </div>
+      ${ (window.estado?.semanas||[]).map(w=>`
+        <div class="block">
+          <h3>${w.titulo}</h3>
+          <div class="table-like">
+            <div class="cell"><b>Intervenções da semana</b><ul>${(w.itens||[]).map(i=>`<li>${i}</li>`).join('')}</ul></div>
+            <div class="cell"><b>Indicadores & Follow-up</b><ul>${(w.indicadores||[]).map(i=>`<li>${i}</li>`).join('')}</ul></div>
+          </div>
+        </div>`).join('') }
+    </div>
+    <script>setTimeout(()=>window.print(),300);</script>
+  </body></html>`;
+
+  const w = window.open('', '_blank');
+  if(w){ w.document.open(); w.document.write(html); w.document.close(); }
 }
