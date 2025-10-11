@@ -1,47 +1,28 @@
-// Estado
+// Estado global
 const $ = (s)=>document.querySelector(s);
 const editorEl = $('#plano-editor');
-window.estado = { cliente:{}, anamnese:{}, plano:[] };
+window.estado = { cliente:{}, anamnese:{}, semanas:[] };
 
-// Guias clínicas (mesmo conteúdo de antes, abreviado aqui)
+// Guias (resumo)
 const GUIDES = [
- {key:'dbt', title:'DBT – STOP + TIPP (Crise/alta ativação)', when:'Intensidade ≥7/10; impulso alto.', steps:[
-  'Meta: baixar para ≤4/10. Postura neutra.',
-  'Respiração 4–6 (5 ciclos). Frio na nuca 20–30s.',
-  'Exercício 45–60s. Checagem e ancoragem.'
- ], script:'“Entre 4, saia 6… Vamos passar 2 minutos sem piorar a crise.”'},
- {key:'cft', title:'CFT – Postura/voz compassiva', when:'Vergonha/rigidez.', steps:[
-  'Postura corajosa + respiração 3 ciclos.',
-  'Crítico → resposta compassiva.',
-  'Âncora: “Eu vejo. Eu fico. Próximo passo possível: ___.”'
- ], script:'“Repita mais lento: Eu vejo. Eu fico. Próximo passo possível é ___.”'},
- {key:'gestalt', title:'Gestalt – Cadeira interna', when:'Ambivalência relacional.', steps:[
-  'Nomear partes e trocar cadeiras.',
-  'Integração e ação final (pedido/limite).'
- ], script:'“Da cadeira do Crítico… Hoje, o passo é ___. ”'},
- {key:'fap', title:'FAP – Coragem relacional', when:'Pedir/discordar.', steps:[
-  'Evocar aqui-agora. Modelar pedido direto. Reforço. Generalizar.'
- ], script:'“Diga agora: Eu preciso de ___. Como foi no corpo?”'},
- {key:'abc', title:'Exposição graduada', when:'Evitação/medo.', steps:[
-  'Lista 5 passos. Executar 1º por 5–10 min sem neutralizar.'
- ], script:'“Faremos só o passo 1 por 5–10 min; sem neutralizar.”'}
+  {t:'DBT – STOP/TIPP', d:'Crise/alta ativação: STOP 2min; TIPP (frio na nuca, resp 4–6, exercício curto).'},
+  {t:'CFT – Postura/Voz', d:'Vergonha/rigidez: postura corajosa, âncora “Eu vejo. Eu fico. Próximo passo possível: ___.”'},
+  {t:'Gestalt – Cadeiras', d:'Ambivalência: parte Crítica × Vulnerável → integração → 1 passo.'},
+  {t:'FAP – Pedido claro', d:'Aqui-agora: modelar pedido direto; reforço; generalizar.'},
+  {t:'Exposição graduada', d:'Evitação: 5 passos; executar 1º 5–10min sem neutralizar.'},
 ];
-
-function renderGuides() {
-  const box = $('#guides'); box.innerHTML = '';
+function renderGuides(){
+  const box = $('#guides'); box.innerHTML='';
   GUIDES.forEach(g=>{
     const el = document.createElement('div');
-    el.className = 'guide';
-    el.innerHTML = `<h3>${g.title}</h3>
-      <div class="mut">Quando usar: ${g.when}</div>
-      <ol>${g.steps.map(s=>`<li>${s}</li>`).join('')}</ol>
-      <div class="mut" style="margin-top:6px"><b>Script breve:</b> ${g.script}</div>`;
+    el.className='guide';
+    el.innerHTML=`<h3>${g.t}</h3><div>${g.d}</div>`;
     box.appendChild(el);
   });
 }
 renderGuides();
 
-// Gerar protocolo com plano de ação semanal
+// Gera SEMPRE 4 semanas (com itens default + baseados na anamnese)
 $('#btn-gerar')?.addEventListener('click', ()=>{
   const nome = $('#f-nome').value.trim();
   const queixa = $('#f-queixa').value.trim();
@@ -50,83 +31,61 @@ $('#btn-gerar')?.addEventListener('click', ()=>{
   const funcao = $('#f-funcao').value;
   const objetivo = $('#f-objetivo').value.trim();
   const pref = $('#f-preferencias').value.trim();
-
   window.estado.cliente = { nome, queixa, objetivo };
   window.estado.anamnese = { intensidade, gatilho, funcao, pref };
 
-  const score = { crise:0, regulacao:0, compaixao:0, experimento:0, habilidades:0, exposicao:0 };
-  if (intensidade>=7) score.crise+=2;
-  if (/noite|sono|sempre/i.test(gatilho)) score.regulacao+=1;
-  if (funcao==='alivio') score.regulacao+=1;
-  if (funcao==='evitacao') score.exposicao+=2;
-  if (funcao==='aprovacao') score.habilidades+=2;
-  if (funcao==='controle') score.compaixao+=1;
-  if (/falar|pedido|limite|relacion|conversa|energia/i.test(objetivo)) score.habilidades+=1;
-  if (/respira|corpo|postura|compaix/i.test(pref)) score.compaixao+=1;
+  const crise = intensidade>=7;
+  const focoRelacao = /falar|pedido|limite|relacion|conversa|vínculo|relacao/i.test(objetivo);
 
-  // Plano de ação semanal (cada semana tem Intervenções + Indicadores/Follow-up)
-  const plano=[];
+  const S1 = ['DBT—STOP diário (2 min).'];
+  if(crise) S1.push('DBT—TIPP SOS (frio na nuca + resp 4–6) quando ≥7/10.');
+  S1.push('Sono: horário fixo + 30 min sem tela.');
 
-  const s1={semana:1,titulo:'Semana 1 — Base e sobrevivência',
-    interv:[ 'DBT—STOP diário (2 min).', (score.crise>0?'DBT—TIPP SOS quando ≥7/10.':null), 'Sono: horário fixo + 30 min sem tela.' ].filter(Boolean),
-    indic:['SUDS antes/depois (0–10).','Horas de sono; hora de deitar.','1 micro-ação segura pós-crise.']
-  };
-  plano.push(s1);
+  const S2 = ['CFT—postura corajosa 2x/dia + âncora.','Gestalt—cadeira interna 1x/semana.'];
 
-  const s2={semana:2,titulo:'Semana 2 — Regulação e contato',
-    interv:[ (score.compaixao>0?'CFT—postura corajosa 2x/dia + âncora.':null), 'Gestalt—cadeira interna 1x/semana.' ].filter(Boolean),
-    indic:['Relato de autocrítica → resposta compassiva.','Decisão tomada após cadeira interna.']
-  };
-  plano.push(s2);
+  const S3 = focoRelacao
+    ? ['DEAR MAN: 1 pedido real (treino + execução).','GIVE/FAST para vínculo + autorrespeito.']
+    : ['Exposição graduada: executar o 1º passo (5–10 min) sem neutralizar.'];
 
-  const s3={semana:3,titulo:'Semana 3 — Habilidade/Exposição',
-    interv:[ (score.habilidades>0?'DEAR MAN: 1 pedido real (treino + execução).':null), (score.exposicao>0?'Exposição: executar 1º passo (5–10 min) sem neutralizar.':null) ].filter(Boolean),
-    indic:['Pedido feito? (sim/não, com quem)','SUDS início/fim da exposição; duração.']
-  };
-  plano.push(s3);
+  const S4 = ['Repetir 2x o que funcionou.','Revisão + próximos passos.'];
 
-  const s4={semana:4,titulo:'Semana 4 — Consolidação',
-    interv:['Repetir 2x o que funcionou.','Revisão + próximos passos.'],
-    indic:['O que ficou mais fácil e por quê','Plano para o mês seguinte (1 foco)']
-  };
-  plano.push(s4);
-
-  // Para o editor na tela (lista simples)
-  window.estado.plano = plano.map(w=>({ semana:w.semana, titulo:w.titulo, itens:[...w.interv] }));
+  window.estado.semanas = [
+    {titulo:'Semana 1 — Base e sobrevivência', itens:S1, indicadores:['SUDS antes/depois (0–10)','Horas de sono','1 micro-ação segura pós-crise']},
+    {titulo:'Semana 2 — Regulação e contato', itens:S2, indicadores:['Relato de autocrítica → resposta compassiva','Decisão após cadeira interna']},
+    {titulo:'Semana 3 — Habilidade/Exposição', itens:S3, indicadores:['Pedido feito? (sim/não, com quem)','SUDS início/fim; duração']},
+    {titulo:'Semana 4 — Consolidação', itens:S4, indicadores:['O que ficou mais fácil e por quê','Plano do mês seguinte (1 foco)']},
+  ];
   renderPlan();
 });
 
 function renderPlan(){
   const el = editorEl; el.innerHTML='';
-  window.estado.plano.forEach(sem=>{
+  window.estado.semanas.forEach((w,idx)=>{
     const wk = document.createElement('div');
     wk.className='week';
-    wk.innerHTML=`<h3>${sem.titulo}</h3>
-      <ul>${sem.itens.map((t,i)=>`<li contenteditable="true" data-s="${sem.semana}" data-i="${i}">${t}</li>`).join('')}</ul>
+    wk.innerHTML=`<h3>${w.titulo}</h3>
+      <ul>${w.itens.map((t,i)=>`<li contenteditable="true" data-w="${idx}" data-i="${i}">${t}</li>`).join('')}</ul>
       <div class="toolbar">
-        <button class="btn ghost" data-add="${sem.semana}">+ item</button>
-        <button class="btn ghost" data-rem="${sem.semana}">- remover último</button>
+        <button class="btn ghost" data-add="${idx}">+ item</button>
+        <button class="btn ghost" data-rem="${idx}">- remover último</button>
       </div>`;
     el.appendChild(wk);
   });
   el.querySelectorAll('[data-add]').forEach(b=>b.addEventListener('click',e=>{
-    const s=+e.currentTarget.getAttribute('data-add');
-    const sem = window.estado.plano.find(x=>x.semana===s);
-    sem.itens.push('Novo item… (edite)'); renderPlan();
+    const i=+e.currentTarget.getAttribute('data-add');
+    window.estado.semanas[i].itens.push('Novo item… (edite)'); renderPlan();
   }));
   el.querySelectorAll('[data-rem]').forEach(b=>b.addEventListener('click',e=>{
-    const s=+e.currentTarget.getAttribute('data-rem');
-    const sem = window.estado.plano.find(x=>x.semana===s);
-    sem.itens.pop(); renderPlan();
+    const i=+e.currentTarget.getAttribute('data-rem');
+    window.estado.semanas[i].itens.pop(); renderPlan();
   }));
   el.querySelectorAll('li[contenteditable]').forEach(li=>li.addEventListener('input',()=>{
-    const s=+li.getAttribute('data-s'); const i=+li.getAttribute('data-i');
-    const sem = window.estado.plano.find(x=>x.semana===s);
-    sem.itens[i]=li.textContent.trim();
+    const w=+li.getAttribute('data-w'); const i=+li.getAttribute('data-i');
+    window.estado.semanas[w].itens[i]=li.textContent.trim();
   }));
 }
 
-// ===== PDF com layout DUAS COLUNAS =====
+// ===== PDF (duas colunas + semanal lado a lado) =====
 document.getElementById('btn-pdf')?.addEventListener('click', gerarPDF);
 async function gerarPDF(){
   const html2canvas = (await import('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js')).default;
@@ -139,11 +98,8 @@ async function gerarPDF(){
   const gat = window.estado?.anamnese?.gatilho || '—';
   const hoje = new Date().toLocaleDateString('pt-BR');
 
-  // construir tabela semanal com duas colunas (Intervenções | Indicadores/Follow-up)
-  const weekly = buildWeeklyTable();
-
   const wrap = document.createElement('div');
-  wrap.className = 'print-wrap';
+  wrap.className='print-wrap';
   wrap.innerHTML = `
     <h2>Parecer Clínico – Mentor Humanista</h2>
     <div class="meta">Nome: <b>${esc(nome)}</b> • Data: ${hoje}<br>
@@ -154,7 +110,7 @@ async function gerarPDF(){
         <h3>Formulação breve</h3>
         <ul>
           <li>Função predominante: ${esc(fun)}.</li>
-          <li>Gatilhos principais: ${esc(gat)}.</li>
+          <li>Gatilhos: ${esc(gat)}.</li>
           <li>Recursos: (preencher).</li>
           <li>Hipóteses: (preencher).</li>
         </ul>
@@ -170,7 +126,7 @@ async function gerarPDF(){
       </div>
     </div>
 
-    ${weekly}
+    ${renderSemanas(window.estado.semanas || [])}
 
     <div class="block"><h3>Observações e combinações</h3><ul><li>(preencher)</li></ul></div>
   `;
@@ -209,27 +165,20 @@ async function gerarPDF(){
   wrap.remove();
 
   function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
-  function buildWeeklyTable(){
-    // reconstruir estrutura semanal com campos 'interv' e 'indic'
-    const weeks = [];
-    for(let w of window.estado.plano){
-      // se não tiver os campos riccos (por clique direto), derivar
-      weeks.push({
-        title: w.titulo || 'Semana',
-        interv: (w.interv || w.itens || []),
-        indic:  (w.indic || ['Progresso percebido (0–10)','Anotações do que funcionou'])
-      });
+  function renderSemanas(list){
+    if(!list || !list.length){
+      return '<div class="block"><i>Gere o plano (botão acima) para popular as 4 semanas.</i></div>';
     }
-    return weeks.map((w,i)=>`<div class="block">
-      <h3>${w.title}</h3>
+    return list.map(w=>`<div class="block">
+      <h3>${esc(w.titulo)}</h3>
       <div class="table-like">
         <div class="cell">
           <b>Intervenções da semana</b>
-          <ul>${w.interv.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>
+          <ul>${(w.itens||[]).map(i=>`<li>${esc(i)}</li>`).join('')}</ul>
         </div>
         <div class="cell">
-          <b>Indicadores & Follow‑up</b>
-          <ul>${w.indic.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>
+          <b>Indicadores & Follow-up</b>
+          <ul>${(w.indicadores||[]).map(i=>`<li>${esc(i)}</li>`).join('')}</ul>
         </div>
       </div>
     </div>`).join('');
