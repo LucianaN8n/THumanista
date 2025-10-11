@@ -1,7 +1,8 @@
 /*
-  Cache estático forte na CDN/navegador
-*/
-  Cache-Control: public, max-age=604800, immutable
-
-/index.html
-  Cache-Control: no-cache
+  Content-Security-Policy: default-src 'self';
+    script-src 'self' https://cdn.jsdelivr.net https://cdn.jsdelivr.net/npm/ 'unsafe-inline';
+    connect-src 'self' https://cdn.jsdelivr.net https://cdn.jsdelivr.net/npm/;
+    img-src 'self' data: blob:;
+    style-src 'self' 'unsafe-inline';
+    font-src 'self' data:;
+    frame-ancestors *;
