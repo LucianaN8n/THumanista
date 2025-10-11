@@ -28,14 +28,19 @@ input,select,textarea{padding:12px;border:1px solid var(--line);border-radius:12
 .plan ul{margin:6px 0 0 18px}
 .plan li{margin:6px 0}
 .plan .toolbar{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
-/* PRINT VIEW (PDF) */
-.print-wrap{ width: 794px; padding: 26px 30px; color:#0e2b2f;
-  font: 14px/1.56 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:#fff;
+
+/* PRINT VIEW (PDF) — compacto */
+.print-wrap{
+  width:794px; padding:20px 22px; background:#fff; color:#0e2b2f;
+  font: 13.5px/1.38 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
 }
-.print-wrap h2{ margin:0 0 10px; font-size:18px; font-weight:800 }
-.print-wrap h3{ margin:18px 0 8px; font-size:15px; font-weight:800; page-break-after:avoid }
-.print-wrap .meta{ font-size:12px; margin:0 0 12px; color:#355c60 }
-.print-wrap ul{ margin:6px 0 0 18px; padding:0 }
-.print-wrap li{ margin:6px 0; }
-.block{ margin:16px 0 14px; padding-bottom:6px; border-bottom:1px solid #e6ecec; page-break-inside:avoid; }
-.page-break{ page-break-before: always; }
+.print-wrap h2{ margin:0 0 8px; font-size:16px; font-weight:800 }
+.print-wrap h3{ margin:12px 0 6px; font-size:14px; font-weight:800; page-break-after:avoid }
+.print-wrap .meta{ font-size:11.5px; margin:0 0 8px; color:#355c60 }
+.print-wrap ul{ margin:4px 0 0 16px; padding:0 }
+.print-wrap li{ margin:3px 0 }
+.block{
+  margin:12px 0 10px; padding-bottom:4px;
+  border-bottom:1px solid #e6ecec; page-break-inside:avoid;
+}
+.page-break{ page-break-before:always }
