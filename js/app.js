@@ -63,7 +63,9 @@ $('#btn-carregar')?.addEventListener('click', ()=>renderPlan(PROTO.semanas));
 $('#btn-pdf-direto')?.addEventListener('click', exportPdfDireto);
 
 async function exportPdfDireto(){
-  if(!(window.html2canvas && window.jspdf)){ alert('Bibliotecas locais não encontradas. Coloque html2canvas.min.js e jspdf.umd.min.js em /vendor.'); return; }
+  if(!(window.html2canvas && window.jspdf)){ 
+    alert('Bibliotecas locais não encontradas. Abra "Instalar bibliotecas" e baixe os dois arquivos em /vendor.');
+    window.open('./vendor/GET_LIBS.html','_blank'); return; }
 
   const tpl = document.getElementById('tpl-print');
   const node = tpl.content.cloneNode(true);
