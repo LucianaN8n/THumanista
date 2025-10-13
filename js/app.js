@@ -1,9 +1,7 @@
-// helpers
 const $ = (s)=>document.querySelector(s);
 const esc = (s)=>String(s ?? '').replace(/[&<>\"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[m]));
 const pad = (n)=>String(n).padStart(2,'0');
 
-/* PROTOCOLO MASTER — Gestalt + AC + Exposição + FAP */
 const PROTO = {
   semanas: [
     { titulo: "Semana 1 — Base & sobrevivência",
@@ -59,7 +57,6 @@ const PROTO = {
   ]
 };
 
-/* GUIA RÁPIDO */
 const GUIDES = [
   { t:"Gestalt — Awareness", d:"2–3 min no início; notar sensação/impulso/intenções; não corrigir, só nomear." },
   { t:"Figura–Fundo", d:"Trazer figura (ansiedade/auto-crítica) e fundo (solidão/expectativa) → ligar à ação." },
@@ -70,7 +67,7 @@ const GUIDES = [
 ];
 
 function renderPlan(semanas=PROTO.semanas){
-  const editor = $('#plano-editor'); editor.innerHTML='';
+  const editor = document.querySelector('#plano-editor'); editor.innerHTML='';
   semanas.forEach((w)=>{
     const el = document.createElement('div');
     el.className = 'plan week';
@@ -88,7 +85,7 @@ function renderPlan(semanas=PROTO.semanas){
 }
 
 function renderGuides(){
-  const box = $('#guides'); box.innerHTML='';
+  const box = document.querySelector('#guides'); box.innerHTML='';
   GUIDES.forEach(g=>{
     const el = document.createElement('div'); el.className='guide';
     el.innerHTML = `<h3>${esc(g.t)}</h3><div>${esc(g.d)}</div>`;
@@ -97,10 +94,9 @@ function renderGuides(){
 }
 
 renderPlan(); renderGuides();
-$('#btn-carregar')?.addEventListener('click', ()=>renderPlan(PROTO.semanas));
-$('#btn-pdf-direto')?.addEventListener('click', exportPdfDireto);
+document.querySelector('#btn-carregar')?.addEventListener('click', ()=>renderPlan(PROTO.semanas));
+document.querySelector('#btn-pdf-direto')?.addEventListener('click', exportPdfDireto);
 
-// === PDF direto (sem diálogo) — rodapé por página via jsPDF ===
 async function exportPdfDireto(){
   if(!(window.html2canvas && window.jspdf)){
     alert('Bibliotecas locais não carregadas. Verifique /vendor/html2canvas.min.js e /vendor/jspdf.umd.min.js.');
@@ -110,13 +106,13 @@ async function exportPdfDireto(){
   const node = tpl.content.cloneNode(true);
   const root = node.querySelector('#print-root');
 
-  const nome = ($('#f-nome').value || 'Paciente').trim();
-  const queixa = $('#f-queixa').value || '—';
-  const intensidade = $('#f-intensidade').value || '—';
-  const gat = $('#f-gatilho').value || '—';
-  const fun = $('#f-funcao').value || '—';
-  const objetivo = $('#f-objetivo').value || '—';
-  const pref = $('#f-preferencias').value || '—';
+  const nome = (document.querySelector('#f-nome').value || 'Paciente').trim();
+  const queixa = document.querySelector('#f-queixa').value || '—';
+  const intensidade = document.querySelector('#f-intensidade').value || '—';
+  const gat = document.querySelector('#f-gatilho').value || '—';
+  const fun = document.querySelector('#f-funcao').value || '—';
+  const objetivo = document.querySelector('#f-objetivo').value || '—';
+  const pref = document.querySelector('#f-preferencias').value || '—';
   const now = new Date();
   const dh = `${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
 
@@ -143,23 +139,20 @@ async function exportPdfDireto(){
     alvo.appendChild(block);
   });
 
-  // montar fora da tela
   const mount = document.createElement('div');
   mount.style.position='fixed'; mount.style.left='-10000px'; mount.appendChild(root);
   document.body.appendChild(mount);
 
-  // rasterizar
   const A4_W=794, A4_H=1123;
   const prevW = root.style.width; root.style.width = A4_W + 'px';
-  const canvas = await html2canvas(root, {scale:2, backgroundColor:'#fff', useCORS:true});
+  const canvas = await html2canvas(root, {scale: 3, backgroundColor:'#fff', useCORS: true});
   const imgW=canvas.width, imgH=canvas.height;
 
-  // PDF
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF('p','pt','a4');
   const px2pt = px=>px*0.75; const pageW=px2pt(A4_W), pageH=px2pt(A4_H);
   const pageSlicePx = Math.floor(A4_H * (canvas.width / A4_W));
-  const margin=8;
+  const margin=6;
 
   let rendered=0, page=0;
   while(rendered < imgH){
@@ -167,11 +160,10 @@ async function exportPdfDireto(){
     const pageCanvas = document.createElement('canvas');
     pageCanvas.width=imgW; pageCanvas.height=sliceH;
     pageCanvas.getContext('2d').drawImage(canvas,0,rendered,imgW,sliceH,0,0,imgW,sliceH);
-    const url = pageCanvas.toDataURL('image/jpeg',0.98);
+    const url = pageCanvas.toDataURL('image/png'); // PNG para nitidez
     if(page>0) pdf.addPage();
-    pdf.addImage(url,'JPEG',px2pt(margin),px2pt(margin),pageW - px2pt(margin*2),pageH - px2pt(margin*2));
+    pdf.addImage(url,'PNG',px2pt(margin),px2pt(margin),pageW - px2pt(margin*2),pageH - px2pt(margin*2));
 
-    // rodapé por página
     pdf.setFontSize(9); pdf.setTextColor(68,104,108);
     pdf.text(nome, px2pt(margin), pageH - px2pt(5));
     pdf.text(dh, pageW - px2pt(margin) - pdf.getTextWidth(dh), pageH - px2pt(5));
