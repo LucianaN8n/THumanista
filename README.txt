@@ -1,8 +1,10 @@
-# THSE – PDF direto (OFFLINE)
-Este pacote remove o botão de instalar libs e **assume** que os arquivos locais já estão em `/vendor`.
+# THSE – Build master (Gestalt + AC + Exposição + FAP)
+- “Carregar Protocolo master” injeta 4 semanas detalhadas (cirúrgico).
+- “Baixar PDF” baixa direto (sem diálogo) e desenha rodapé por página via jsPDF (Nome | Data). Não há rodapé estático no HTML.
 
-Coloque/garanta estes arquivos (nomes exatos):
-- vendor/html2canvas.min.js
-- vendor/jspdf.umd.min.js
+## Coloque as libs em /vendor
+- vendor/html2canvas.min.js  (v1.4.x)
+- vendor/jspdf.umd.min.js    (v2.5.x)
 
-Depois publique a pasta descompactada no Netlify. O botão **Baixar PDF** baixa direto (sem janela) e o rodapé mostra **Nome | Data** (sem URL).
+## Netlify
+Incluí `_redirects` para evitar que a SPA capture arquivos JS da pasta vendor.
