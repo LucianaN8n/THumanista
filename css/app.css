@@ -45,3 +45,16 @@ input,select,textarea{padding:12px;border:1px solid var(--line);border-radius:12
 .table-like .cell{ border:1px solid #e6ecec; border-radius:8px; padding:8px }
 .kv{ display:grid; grid-template-columns:auto 1fr; gap:6px 10px; margin:6px 0 4px }
 .kv b{ white-space:nowrap }
+/* Footer personalizado que aparece em todas as páginas impressas */
+.footer-print{
+  position: fixed;
+  bottom: 6mm;
+  left: 12mm;
+  right: 12mm;
+  font-size: 11px;
+  color: #44686c;
+  border-top: 1px solid #e6ecec;
+  padding-top: 3mm;
+  display: flex;
+  justify-content: space-between;
+}
