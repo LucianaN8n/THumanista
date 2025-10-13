@@ -1,9 +1,7 @@
-// ===== helpers =====
 const $ = (s)=>document.querySelector(s);
 const esc = (s)=>String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const pad = (n)=>String(n).padStart(2,'0');
 
-// ===== preset curto =====
 const PROTO = {semanas:[
   {titulo:'Semana 1 — Base & sobrevivência',itens:[
     'Awareness corporal diário (2–3 min).',
@@ -27,10 +25,8 @@ const PROTO = {semanas:[
   ],indicadores:['PHQ-9 final + mini-LSAS','% sem segurança','1º passo do mês agendado']},
 ]};
 
-// ===== render editor =====
-const editor = $('#plano-editor');
-function renderPlan(semanas = PROTO.semanas){
-  editor.innerHTML = '';
+function renderPlan(semanas=PROTO.semanas){
+  const editor = $('#plano-editor'); editor.innerHTML='';
   semanas.forEach((w)=>{
     const el = document.createElement('div');
     el.className = 'plan week';
@@ -48,14 +44,13 @@ function renderPlan(semanas = PROTO.semanas){
 }
 renderPlan();
 
-// Diretrizes (demo simples)
-const GUIDES = [
+const GUIDES=[
   {t:'Gestalt — Awareness', d:'Figura–fundo; ação mínima; 2–3 min.'},
   {t:'Cadeiras internas', d:'Crítico × Vulnerável; integração.'},
   {t:'AC (depressão)', d:'Agir antes do humor.'},
   {t:'Exposição social', d:'Hierarquia; remover seguranças.'},
 ];
-(function renderGuides(){
+(function(){
   const box = $('#guides'); box.innerHTML='';
   GUIDES.forEach(g=>{
     const el = document.createElement('div'); el.className='guide';
@@ -65,17 +60,15 @@ const GUIDES = [
 })();
 
 $('#btn-carregar')?.addEventListener('click', ()=>renderPlan(PROTO.semanas));
-
-// ===== PDF direto (sem diálogo) =====
 $('#btn-pdf-direto')?.addEventListener('click', exportPdfDireto);
 
 async function exportPdfDireto(){
-  // monta DOM do print a partir do template
+  if(!(window.html2canvas && window.jspdf)){ alert('Bibliotecas locais não encontradas. Coloque html2canvas.min.js e jspdf.umd.min.js em /vendor.'); return; }
+
   const tpl = document.getElementById('tpl-print');
   const node = tpl.content.cloneNode(true);
   const root = node.querySelector('#print-root');
 
-  // preenche cabeçalho/rodapé
   const nome = ($('#f-nome').value || 'Paciente').trim();
   const queixa = $('#f-queixa').value || '—';
   const intensidade = $('#f-intensidade').value || '—';
@@ -96,7 +89,6 @@ async function exportPdfDireto(){
   root.querySelector('#rodape-nome').textContent = nome;
   root.querySelector('#rodape-data').textContent = dh;
 
-  // semanas do editor
   const alvo = root.querySelector('#p-semanas');
   document.querySelectorAll('#plano-editor .week').forEach(w=>{
     const titulo = w.querySelector('h3')?.textContent || '';
@@ -111,45 +103,37 @@ async function exportPdfDireto(){
     alvo.appendChild(block);
   });
 
-  // monta invisível na página para captura
   const mount = document.createElement('div');
-  mount.style.position = 'fixed'; mount.style.left = '-10000px';
-  mount.appendChild(root);
+  mount.style.position='fixed'; mount.style.left='-10000px'; mount.appendChild(root);
   document.body.appendChild(mount);
 
-  // captura e gera PDF (multi-página)
-  const A4_W = 794, A4_H = 1123; // px em ~96dpi
+  const A4_W=794, A4_H=1123;
   const prevW = root.style.width; root.style.width = A4_W + 'px';
   const canvas = await html2canvas(root, {scale:2, backgroundColor:'#fff', useCORS:true});
-  const imgW = canvas.width, imgH = canvas.height;
+  const imgW=canvas.width, imgH=canvas.height;
 
   const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF('p', 'pt', 'a4');
-  const px2pt = px=>px*0.75; const pageW = px2pt(A4_W), pageH = px2pt(A4_H);
+  const pdf = new jsPDF('p','pt','a4');
+  const px2pt = px=>px*0.75; const pageW=px2pt(A4_W), pageH=px2pt(A4_H);
   const pageSlicePx = Math.floor(A4_H * (canvas.width / A4_W));
-  const margin = 8;
+  const margin=8;
 
-  let rendered = 0, page = 0;
-  while (rendered < imgH){
+  let rendered=0, page=0;
+  while(rendered < imgH){
     const sliceH = Math.min(pageSlicePx, imgH - rendered);
     const pageCanvas = document.createElement('canvas');
-    pageCanvas.width = imgW; pageCanvas.height = sliceH;
-    pageCanvas.getContext('2d').drawImage(canvas, 0, rendered, imgW, sliceH, 0, 0, imgW, sliceH);
-    const url = pageCanvas.toDataURL('image/jpeg', 0.98);
-
+    pageCanvas.width=imgW; pageCanvas.height=sliceH;
+    pageCanvas.getContext('2d').drawImage(canvas,0,rendered,imgW,sliceH,0,0,imgW,sliceH);
+    const url = pageCanvas.toDataURL('image/jpeg',0.98);
     if(page>0) pdf.addPage();
-    pdf.addImage(url, 'JPEG', px2pt(margin), px2pt(margin), pageW - px2pt(margin*2), pageH - px2pt(margin*2));
-
-    // rodapé
+    pdf.addImage(url,'JPEG',px2pt(margin),px2pt(margin),pageW - px2pt(margin*2),pageH - px2pt(margin*2));
     pdf.setFontSize(9); pdf.setTextColor(68,104,108);
     pdf.text(nome, px2pt(margin), pageH - px2pt(5));
     pdf.text(dh, pageW - px2pt(margin) - pdf.getTextWidth(dh), pageH - px2pt(5));
-
     rendered += sliceH; page++;
   }
 
   const nomePaciente = (nome || 'paciente').replace(/\s+/g,'_').toLowerCase();
   pdf.save(`parecer_${nomePaciente}.pdf`);
-
   root.style.width = prevW; mount.remove();
 }
