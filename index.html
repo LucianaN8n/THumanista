@@ -4,14 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>THSE – Mentor Humanista (PDF direto)</title>
-  <meta name="description" content="Anamnese, plano de 4 semanas e exportação PDF direta sem abrir o diálogo de impressão.">
-  <!-- CSP permitindo jsDelivr (necessário para html2canvas/jsPDF) -->
-  <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline';
-                 script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://cdn.jsdelivr.net;
-                 font-src 'self' data:;">
+  <meta name="description" content="Anamnese, plano de 4 semanas e PDF direto sem diálogo.">
   <link rel="stylesheet" href="./css/app.css">
-  <!-- libs de exportação (sem diálogo) -->
+  <!-- libs via CDN (permitidas pelo CSP em _headers) -->
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <script defer src="./js/app.js"></script>
@@ -30,7 +25,7 @@
       <h2>1) Dados do paciente</h2>
       <div class="grid2">
         <label>Nome do paciente
-          <input id="f-nome" type="text" placeholder="Ex.: Ana Souza" oninput="document.getElementById('rodape-nome').textContent=this.value || 'Paciente'">
+          <input id="f-nome" type="text" placeholder="Ex.: Ana Souza">
         </label>
         <label>Queixa principal
           <input id="f-queixa" type="text" placeholder="Ex.: isolamento social">
@@ -77,7 +72,7 @@
     <small>© Mentor Humanista — uso educacional. Você é o responsável técnico.</small>
   </footer>
 
-  <!-- Área de impressão real (o que vai pro PDF) -->
+  <!-- Template do conteúdo que vai para o PDF -->
   <template id="tpl-print">
     <div id="print-root" class="print-wrap">
       <h2>Parecer Clínico – Mentor Humanista</h2>
