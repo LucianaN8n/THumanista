@@ -1,27 +1,39 @@
-// Estado
+// helpers
 const $ = (s)=>document.querySelector(s);
+function esc(s){
+  return String(s ?? '')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+// estado
 const editorEl = $('#plano-editor');
 window.estado = { cliente:{}, anamnese:{}, semanas:[] };
 
+// diretrizes
 const GUIDES = [
-  {t:'DBT – STOP/TIPP', d:'Crise/alta ativação: STOP 2min; TIPP (frio na nuca, resp 4–6, exercício curto).'},
-  {t:'CFT – Postura/Voz', d:'Vergonha/rigidez: postura corajosa, âncora “Eu vejo. Eu fico. Próximo passo possível: ___.”'},
+  {t:'DBT – STOP/TIPP', d:'Crise/alta ativação: STOP 2 min; TIPP (frio na nuca, resp 4–6, exercício curto).'},
+  {t:'CFT – Postura/Voz', d:'Vergonha/rigidez: postura corajosa + âncora "Eu vejo. Eu fico. Próximo passo possível: ___."'},
   {t:'Gestalt – Cadeiras', d:'Ambivalência: parte Crítica × Vulnerável → integração → 1 passo.'},
   {t:'FAP – Pedido claro', d:'Aqui-agora: modelar pedido direto; reforço; generalizar.'},
-  {t:'Exposição graduada', d:'Evitação: 5 passos; executar 1º 5–10min sem neutralizar.'},
+  {t:'Exposição graduada', d:'Evitação: 5 passos; executar o 1º (5–10 min) sem neutralizar.'},
 ];
 function renderGuides(){
-  const box = $('#guides'); box.innerHTML='';
+  const box = $('#guides'); if(!box) return;
+  box.innerHTML='';
   GUIDES.forEach(g=>{
     const el = document.createElement('div');
     el.className='guide';
-    el.innerHTML=`<h3>${g.t}</h3><div>${g.d}</div>`;
+    el.innerHTML=`<h3>${esc(g.t)}</h3><div>${esc(g.d)}</div>`;
     box.appendChild(el);
   });
 }
 renderGuides();
 
-// Gera SEMPRE 4 semanas
+// gerar 4 semanas
 $('#btn-gerar')?.addEventListener('click', ()=>{
   const nome = $('#f-nome').value.trim();
   const queixa = $('#f-queixa').value.trim();
@@ -34,10 +46,10 @@ $('#btn-gerar')?.addEventListener('click', ()=>{
   window.estado.anamnese = { intensidade, gatilho, funcao, pref };
 
   const crise = intensidade>=7;
-  const focoRelacao = /falar|pedido|limite|relacion|conversa|vínculo|relacao/i.test(objetivo);
+  const focoRelacao = /falar|pedido|limite|relacion|conversa|v.nculo|relacao/i.test(objetivo);
 
   const S1 = ['DBT—STOP diário (2 min).'];
-  if(crise) S1.push('DBT—TIPP SOS (frio na nuca + resp 4–6) quando ≥7/10.');
+  if(crise) S1.push('DBT—TIPP SOS (frio na nuca + resp 4–6) quando >=7/10.');
   S1.push('Sono: horário fixo + 30 min sem tela.');
 
   const S2 = ['CFT—postura corajosa 2x/dia + âncora.','Gestalt—cadeira interna 1x/semana.'];
@@ -58,12 +70,13 @@ $('#btn-gerar')?.addEventListener('click', ()=>{
 });
 
 function renderPlan(){
-  const el = editorEl; el.innerHTML='';
+  const el = editorEl; if(!el) return;
+  el.innerHTML='';
   window.estado.semanas.forEach((w,idx)=>{
     const wk = document.createElement('div');
     wk.className='week';
-    wk.innerHTML=`<h3>${w.titulo}</h3>
-      <ul>${w.itens.map((t,i)=>`<li contenteditable="true" data-w="${idx}" data-i="${i}">${t}</li>`).join('')}</ul>
+    wk.innerHTML=`<h3>${esc(w.titulo)}</h3>
+      <ul>${w.itens.map((t,i)=>`<li contenteditable="true" data-w="${idx}" data-i="${i}">${esc(t)}</li>`).join('')}</ul>
       <div class="toolbar">
         <button class="btn ghost" data-add="${idx}">+ item</button>
         <button class="btn ghost" data-rem="${idx}">- remover último</button>
@@ -84,7 +97,7 @@ function renderPlan(){
   }));
 }
 
-// ===== Impressão via IFRAME oculto — inclui "Dados do paciente" + Plano completo =====
+// imprimir via iframe
 document.getElementById('btn-pdf')?.addEventListener('click', ()=>{
   const nome = (window.estado?.cliente?.nome || '—').trim();
   const queixa = window.estado?.cliente?.queixa || '—';
@@ -170,13 +183,10 @@ document.getElementById('btn-pdf')?.addEventListener('click', ()=>{
     </div>
   </body></html>`;
 
-  // imprime via IFRAME oculto (sem pop-up e sem CDN)
   const iframe = document.createElement('iframe');
   iframe.style.position='fixed'; iframe.style.right='0'; iframe.style.bottom='0';
   iframe.style.width='0'; iframe.style.height='0'; iframe.style.border='0';
   document.body.appendChild(iframe);
   iframe.srcdoc = html;
-  iframe.onload = () => setTimeout(()=>{ iframe.contentWindow?.print?.(); setTimeout(()=>iframe.remove(), 1000); }, 50);
-
-  function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+  iframe.onload = () => setTimeout(()=>{ iframe.contentWindow?.print?.(); setTimeout(()=>iframe.remove(), 1000); }, 60);
 });
