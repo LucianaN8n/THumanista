@@ -97,7 +97,7 @@ function renderPlan(){
   }));
 }
 
-// imprimir via iframe
+// imprimir via iframe — corrigido: (A ?? B) || '—'
 document.getElementById('btn-pdf')?.addEventListener('click', ()=>{
   const nome = (window.estado?.cliente?.nome || '—').trim();
   const queixa = window.estado?.cliente?.queixa || '—';
@@ -105,7 +105,7 @@ document.getElementById('btn-pdf')?.addEventListener('click', ()=>{
   const fun = window.estado?.anamnese?.funcao || '—';
   const gat = window.estado?.anamnese?.gatilho || '—';
   const pref = window.estado?.anamnese?.pref || document.getElementById('f-preferencias')?.value || '—';
-  const intensidade = window.estado?.anamnese?.intensidade ?? document.getElementById('f-intensidade')?.value || '—';
+  const intensidade = (window.estado?.anamnese?.intensidade ?? document.getElementById('f-intensidade')?.value) || '—';
   const hoje = new Date().toLocaleDateString('pt-BR');
 
   const PRINT_CSS = `
