@@ -97,6 +97,9 @@ renderPlan(); renderGuides();
 document.querySelector('#btn-carregar')?.addEventListener('click', ()=>renderPlan(PROTO.semanas));
 document.querySelector('#btn-pdf-direto')?.addEventListener('click', exportPdfDireto);
 
+// util
+const round2 = (v)=>Math.round(v*100)/100;
+
 async function exportPdfDireto(){
   if(!(window.html2canvas && window.jspdf)){
     alert('Bibliotecas locais não carregadas. Verifique /vendor/html2canvas.min.js e /vendor/jspdf.umd.min.js.');
@@ -106,13 +109,14 @@ async function exportPdfDireto(){
   const node = tpl.content.cloneNode(true);
   const root = node.querySelector('#print-root');
 
-  const nome = (document.querySelector('#f-nome').value || 'Paciente').trim();
-  const queixa = document.querySelector('#f-queixa').value || '—';
-  const intensidade = document.querySelector('#f-intensidade').value || '—';
-  const gat = document.querySelector('#f-gatilho').value || '—';
-  const fun = document.querySelector('#f-funcao').value || '—';
-  const objetivo = document.querySelector('#f-objetivo').value || '—';
-  const pref = document.querySelector('#f-preferencias').value || '—';
+  const get = (sel)=>document.querySelector(sel);
+  const nome = (get('#f-nome').value || 'Paciente').trim();
+  const queixa = get('#f-queixa').value || '—';
+  const intensidade = get('#f-intensidade').value || '—';
+  const gat = get('#f-gatilho').value || '—';
+  const fun = get('#f-funcao').value || '—';
+  const objetivo = get('#f-objetivo').value || '—';
+  const pref = get('#f-preferencias').value || '—';
   const now = new Date();
   const dh = `${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
 
@@ -145,7 +149,12 @@ async function exportPdfDireto(){
 
   const A4_W=794, A4_H=1123;
   const prevW = root.style.width; root.style.width = A4_W + 'px';
-  const canvas = await html2canvas(root, {scale: 3, backgroundColor:'#fff', useCORS: true});
+
+  const device = Math.max(2, Math.ceil(window.devicePixelRatio || 1));
+  const canvas = await html2canvas(root, {
+    scale: 3*device/3, // respeita DPR mas controla peso
+    backgroundColor:'#fff', useCORS:true, foreignObjectRendering:false, willReadFrequently:true
+  });
   const imgW=canvas.width, imgH=canvas.height;
 
   const { jsPDF } = window.jspdf;
@@ -153,22 +162,32 @@ async function exportPdfDireto(){
   const px2pt = px=>px*0.75; const pageW=px2pt(A4_W), pageH=px2pt(A4_H);
   const pageSlicePx = Math.floor(A4_H * (canvas.width / A4_W));
   const margin=6;
+  const overlap = 4; // px de sobreposição para evitar serrilhado/antialias na última fatia
 
   let rendered=0, page=0;
   while(rendered < imgH){
-    const sliceH = Math.min(pageSlicePx, imgH - rendered);
+    let sliceH = Math.min(pageSlicePx, imgH - rendered);
+    // garantir overlap nas páginas intermediárias
+    if(rendered + sliceH < imgH) sliceH += overlap;
+
     const pageCanvas = document.createElement('canvas');
     pageCanvas.width=imgW; pageCanvas.height=sliceH;
     pageCanvas.getContext('2d').drawImage(canvas,0,rendered,imgW,sliceH,0,0,imgW,sliceH);
-    const url = pageCanvas.toDataURL('image/png'); // PNG para nitidez
+    const url = pageCanvas.toDataURL('image/png');
+
     if(page>0) pdf.addPage();
-    pdf.addImage(url,'PNG',px2pt(margin),px2pt(margin),pageW - px2pt(margin*2),pageH - px2pt(margin*2));
+    const x = round2(px2pt(margin)), y = round2(px2pt(margin));
+    const w = round2(pageW - px2pt(margin*2));
+    const h = round2(pageH - px2pt(margin*2));
+    pdf.addImage(url,'PNG',x,y,w,h);
 
     pdf.setFontSize(9); pdf.setTextColor(68,104,108);
-    pdf.text(nome, px2pt(margin), pageH - px2pt(5));
-    pdf.text(dh, pageW - px2pt(margin) - pdf.getTextWidth(dh), pageH - px2pt(5));
+    pdf.text(nome, x, pageH - px2pt(5));
+    const tw = pdf.getTextWidth(dh);
+    pdf.text(dh, pageW - x - tw, pageH - px2pt(5));
 
-    rendered += sliceH; page++;
+    rendered += (pageSlicePx); // avança uma página "útil" (sem contar overlap repetido)
+    page++;
   }
   const nomePaciente = (nome || 'paciente').replace(/\s+/g,'_').toLowerCase();
   pdf.save(`parecer_${nomePaciente}.pdf`);
