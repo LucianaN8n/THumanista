@@ -21,7 +21,7 @@ function renderGuides(){
 }
 renderGuides();
 
-// Sempre monta 4 semanas
+// Gera SEMPRE 4 semanas
 $('#btn-gerar')?.addEventListener('click', ()=>{
   const nome = $('#f-nome').value.trim();
   const queixa = $('#f-queixa').value.trim();
@@ -84,66 +84,65 @@ function renderPlan(){
   }));
 }
 
-// ===== PDF com fallback CSP-safe =====
-document.getElementById('btn-pdf')?.addEventListener('click', gerarPDF);
-async function gerarPDF(){
-  let html2canvasMod, jsPDFMod;
-  try{
-    html2canvasMod = (await import('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js')).default;
-    jsPDFMod = (await import('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js')).jsPDF;
-  }catch(e){
-    console.warn('CDN bloqueada por CSP. Usando fallback de impressão.', e);
-    return fallbackPrint();
-  }
-
-  const nome = (window.estado?.cliente?.nome || 'Cliente').trim();
+// ===== Impressão via IFRAME oculto — inclui "Dados do paciente" + Plano completo =====
+document.getElementById('btn-pdf')?.addEventListener('click', ()=>{
+  const nome = (window.estado?.cliente?.nome || '—').trim();
   const queixa = window.estado?.cliente?.queixa || '—';
   const objetivo = window.estado?.cliente?.objetivo || '—';
   const fun = window.estado?.anamnese?.funcao || '—';
   const gat = window.estado?.anamnese?.gatilho || '—';
+  const pref = window.estado?.anamnese?.pref || document.getElementById('f-preferencias')?.value || '—';
+  const intensidade = window.estado?.anamnese?.intensidade ?? document.getElementById('f-intensidade')?.value || '—';
   const hoje = new Date().toLocaleDateString('pt-BR');
 
-  const wrap = buildPrintDom(nome, queixa, objetivo, fun, gat, hoje);
-  document.body.appendChild(wrap);
+  const PRINT_CSS = `
+  @page{ size:A4; margin:14mm 12mm; }
+  @media print{body{background:#fff}.no-print{display:none!important}}
+  .print-wrap{ width:794px; padding:0 6px; background:#fff; color:#0e2b2f;
+    font: 13.4px/1.38 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;}
+  .print-wrap h2{ margin:0 0 6px; font-size:16px; font-weight:800 }
+  .print-wrap h3{ margin:10px 0 6px; font-size:14px; font-weight:800; page-break-after:avoid }
+  .print-wrap .meta{ font-size:11.5px; margin:0 0 8px; color:#355c60 }
+  .print-wrap ul{ margin:4px 0 0 16px; padding:0 }
+  .print-wrap li{ margin:3px 0 }
+  .block{ margin:10px 0 8px; padding-bottom:4px; border-bottom:1px solid #e6ecec; page-break-inside:avoid }
+  .cols-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px }
+  .table-like{ display:grid; grid-template-columns:1.1fr .9fr; gap:10px }
+  .table-like .cell{ border:1px solid #e6ecec; border-radius:8px; padding:8px }
+  .kv{ display:grid; grid-template-columns:auto 1fr; gap:6px 10px; margin:6px 0 4px }
+  .kv b{ white-space:nowrap }`;
 
-  const canvas = await html2canvasMod(wrap, { backgroundColor:'#fff', scale:2, useCORS:true });
-  const pdf = new jsPDFMod({ unit:'pt', format:'a4' });
-  const pageW = pdf.internal.pageSize.getWidth();
-  const pageH = pdf.internal.pageSize.getHeight();
-  const margin = 22;
-  const imgW = pageW - margin*2;
-  const ratio = canvas.width / canvas.height;
-  const imgH = imgW / ratio;
+  const semanas = (window.estado?.semanas||[]).map(w=>`
+    <div class="block">
+      <h3>${esc(w.titulo)}</h3>
+      <div class="table-like">
+        <div class="cell"><b>Intervenções da semana</b>
+          <ul>${(w.itens||[]).map(i=>`<li>${esc(i)}</li>`).join('')}</ul>
+        </div>
+        <div class="cell"><b>Indicadores & Follow-up</b>
+          <ul>${(w.indicadores||[]).map(i=>`<li>${esc(i)}</li>`).join('')}</ul>
+        </div>
+      </div>
+    </div>`).join('');
 
-  if (imgH <= pageH - margin*2) {
-    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', margin, margin, imgW, imgH, '', 'FAST');
-  } else {
-    let srcY = 0;
-    const usablePt = pageH - margin*2;
-    const usablePx = usablePt * (canvas.width / imgW);
-    const overlapPx = 6 * (canvas.width / imgW);
-    while (srcY < canvas.height) {
-      const sliceH = Math.min(usablePx, canvas.height - srcY);
-      const part = document.createElement('canvas');
-      part.width = canvas.width; part.height = sliceH;
-      part.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
-      const partData = part.toDataURL('image/png');
-      const partHpt = (sliceH / canvas.width) * imgW;
-      pdf.addImage(partData, 'PNG', margin, margin, imgW, partHpt, '', 'FAST');
-      srcY += sliceH - overlapPx;
-      if (srcY < canvas.height) pdf.addPage();
-    }
-  }
-  pdf.save(`Protocolo_${nome.replace(/\s+/g,'_')}_${hoje}.pdf`);
-  wrap.remove();
-
-  function buildPrintDom(nome, queixa, objetivo, fun, gat, hoje){
-    const wrap = document.createElement('div');
-    wrap.className='print-wrap';
-    wrap.innerHTML = `
+  const html = `<!doctype html><html><head><meta charset="utf-8">
+    <title>Parecer – ${esc(nome)}</title>
+    <style>${PRINT_CSS}</style>
+  </head><body>
+    <div class="print-wrap">
       <h2>Parecer Clínico – Mentor Humanista</h2>
-      <div class="meta">Nome: <b>${esc(nome)}</b> • Data: ${hoje}<br>
-        Queixa: ${esc(queixa)}<br>Objetivo: ${esc(objetivo)}</div>
+      <div class="meta">Data: ${hoje}</div>
+
+      <div class="block"><h3>Dados do paciente</h3>
+        <div class="kv"><b>Nome:</b> <span>${esc(nome)}</span></div>
+        <div class="kv"><b>Queixa:</b> <span>${esc(queixa)}</span></div>
+        <div class="kv"><b>Objetivo:</b> <span>${esc(objetivo)}</span></div>
+        <div class="kv"><b>Intensidade (0–10):</b> <span>${esc(intensidade)}</span></div>
+        <div class="kv"><b>Quando piora?</b> <span>${esc(gat)}</span></div>
+        <div class="kv"><b>Função do padrão:</b> <span>${esc(fun)}</span></div>
+        <div class="kv"><b>Preferências/limites:</b> <span>${esc(pref)}</span></div>
+      </div>
+
       <div class="block cols-2">
         <div>
           <h3>Formulação breve</h3>
@@ -164,75 +163,20 @@ async function gerarPDF(){
           </ul>
         </div>
       </div>
-      ${renderSemanas(window.estado.semanas || [])}
-      <div class="block"><h3>Observações e combinações</h3><ul><li>(preencher)</li></ul></div>`;
-    return wrap;
-  }
-  function renderSemanas(list){
-    return (list||[]).map(w=>`
-      <div class="block">
-        <h3>${esc(w.titulo)}</h3>
-        <div class="table-like">
-          <div class="cell"><b>Intervenções da semana</b>
-            <ul>${(w.itens||[]).map(i=>`<li>${esc(i)}</li>`).join('')}</ul>
-          </div>
-          <div class="cell"><b>Indicadores & Follow-up</b>
-            <ul>${(w.indicadores||[]).map(i=>`<li>${esc(i)}</li>`).join('')}</ul>
-          </div>
-        </div>
-      </div>`).join('');
-  }
-  function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
-}
 
-// Fallback: abrir janela de impressão (Salvar como PDF) se CDN bloqueada por CSP
-function fallbackPrint(){
-  const nome = (window.estado?.cliente?.nome || 'Cliente').trim();
-  const queixa = window.estado?.cliente?.queixa || '—';
-  const objetivo = window.estado?.cliente?.objetivo || '—';
-  const fun = window.estado?.anamnese?.funcao || '—';
-  const gat = window.estado?.anamnese?.gatilho || '—';
-  const hoje = new Date().toLocaleDateString('pt-BR');
+      ${semanas}
 
-  const html = `<!doctype html><html><head><meta charset="utf-8"><title>Parecer – ${nome}</title>
-    <style>${document.querySelector('style')?.textContent || ''}</style>
-  </head><body>
-    <div class="print-wrap">
-      <h2>Parecer Clínico – Mentor Humanista</h2>
-      <div class="meta">Nome: <b>${nome}</b> • Data: ${hoje}<br>
-        Queixa: ${queixa}<br>Objetivo: ${objetivo}</div>
-      <div class="block cols-2">
-        <div>
-          <h3>Formulação breve</h3>
-          <ul>
-            <li>Função predominante: ${fun}.</li>
-            <li>Gatilhos: ${gat}.</li>
-            <li>Recursos: (preencher).</li>
-            <li>Hipóteses: (preencher).</li>
-          </ul>
-        </div>
-        <div>
-          <h3>Metas operacionais</h3>
-          <ul>
-            <li>S1: crise/sono.</li>
-            <li>S2: regulação/contato.</li>
-            <li>S3: habilidade/exposição.</li>
-            <li>S4: consolidação.</li>
-          </ul>
-        </div>
-      </div>
-      ${ (window.estado?.semanas||[]).map(w=>`
-        <div class="block">
-          <h3>${w.titulo}</h3>
-          <div class="table-like">
-            <div class="cell"><b>Intervenções da semana</b><ul>${(w.itens||[]).map(i=>`<li>${i}</li>`).join('')}</ul></div>
-            <div class="cell"><b>Indicadores & Follow-up</b><ul>${(w.indicadores||[]).map(i=>`<li>${i}</li>`).join('')}</ul></div>
-          </div>
-        </div>`).join('') }
+      <div class="block"><h3>Observações e combinações</h3><ul><li>(preencher)</li></ul></div>
     </div>
-    <script>setTimeout(()=>window.print(),300);</script>
   </body></html>`;
 
-  const w = window.open('', '_blank');
-  if(w){ w.document.open(); w.document.write(html); w.document.close(); }
-}
+  // imprime via IFRAME oculto (sem pop-up e sem CDN)
+  const iframe = document.createElement('iframe');
+  iframe.style.position='fixed'; iframe.style.right='0'; iframe.style.bottom='0';
+  iframe.style.width='0'; iframe.style.height='0'; iframe.style.border='0';
+  document.body.appendChild(iframe);
+  iframe.srcdoc = html;
+  iframe.onload = () => setTimeout(()=>{ iframe.contentWindow?.print?.(); setTimeout(()=>iframe.remove(), 1000); }, 50);
+
+  function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+});

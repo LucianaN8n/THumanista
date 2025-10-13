@@ -28,17 +28,20 @@ input,select,textarea{padding:12px;border:1px solid var(--line);border-radius:12
 .plan li{margin:6px 0}
 .plan .toolbar{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
 
-/* PRINT VIEW (PDF) — compacto + duas colunas */
-.print-wrap{ width:794px; padding:20px 22px; background:#fff; color:#0e2b2f;
-  font: 13.5px/1.38 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+/* PRINT VIEW */
+@page{ size:A4; margin:14mm 12mm; }
+@media print{ body{background:#fff} .no-print{display:none!important} }
+.print-wrap{ width:794px; padding:0 6px; background:#fff; color:#0e2b2f;
+  font: 13.4px/1.38 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
 }
-.print-wrap h2{ margin:0 0 8px; font-size:16px; font-weight:800 }
-.print-wrap h3{ margin:12px 0 6px; font-size:14px; font-weight:800; page-break-after:avoid }
+.print-wrap h2{ margin:0 0 6px; font-size:16px; font-weight:800 }
+.print-wrap h3{ margin:10px 0 6px; font-size:14px; font-weight:800; page-break-after:avoid }
 .print-wrap .meta{ font-size:11.5px; margin:0 0 8px; color:#355c60 }
 .print-wrap ul{ margin:4px 0 0 16px; padding:0 }
 .print-wrap li{ margin:3px 0 }
-.block{ margin:12px 0 10px; padding-bottom:4px; border-bottom:1px solid #e6ecec; page-break-inside:avoid }
-.cols-2{ display:grid; grid-template-columns:1fr 1fr; gap:14px }
-.table-like{ display:grid; grid-template-columns:1.1fr .9fr; gap:12px }
+.block{ margin:10px 0 8px; padding-bottom:4px; border-bottom:1px solid #e6ecec; page-break-inside:avoid }
+.cols-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px }
+.table-like{ display:grid; grid-template-columns:1.1fr .9fr; gap:10px }
 .table-like .cell{ border:1px solid #e6ecec; border-radius:8px; padding:8px }
-.page-break{ page-break-before:always }
+.kv{ display:grid; grid-template-columns:auto 1fr; gap:6px 10px; margin:6px 0 4px }
+.kv b{ white-space:nowrap }
