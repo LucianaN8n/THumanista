@@ -557,7 +557,9 @@ async function exportPdf() {
     if (page > 0) pdf.addPage();
     const x = round2(px2pt(margin)), y = round2(px2pt(margin));
     const w = round2(pageW - px2pt(margin * 2));
-    const h = round2(pageH - px2pt(margin * 2));
+    // Altura proporcional ao conteúdo real da fatia — evita esticar a
+    // última página (que costuma ser menor que as demais) e ficar borrada.
+    const h = round2(Math.min(pageH - px2pt(margin * 2), w * (sliceH / imgW)));
     pdf.addImage(url, 'PNG', x, y, w, h);
 
     pdf.setFontSize(9); pdf.setTextColor(68, 104, 108);
