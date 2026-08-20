@@ -1,11 +1,14 @@
-# Netlify config — embed Hotmart liberado
+# Netlify config — embed Hotmart/Wix liberado
+# Esta é a ÚNICA fonte de headers do site (o arquivo _headers foi removido
+# porque duplicava/contradizia estas regras e travava frame-ancestors,
+# impedindo o app de carregar embutido no Hotmart).
 [build]
   publish = "."
 
 [[headers]]
   for = "/*"
   [headers.values]
-  Content-Security-Policy = "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'self' https://*.hotmart.com https://hotmart.com https://*.hotmart.com.br;"
+  Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'self' https://*.hotmart.com https://hotmart.com https://*.hotmart.com.br;"
   Referrer-Policy = "no-referrer-when-downgrade"
   X-Content-Type-Options = "nosniff"
   X-Frame-Options = "ALLOWALL"
